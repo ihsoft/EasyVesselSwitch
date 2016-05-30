@@ -11,17 +11,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// A mod to make vessel switching more user friendly.
-// Main features:
-// - Allows selecting target vessel with mouse (by default: Alt+Left click).
-// - Prevents random camera orientation on the new vessel:
-//   - For close vessel there are two different modes that allows keeping the context that can be
-//     switched from keyboard (F7 by default):
-//     - Preserve old camera position and only rotate camera to the newly selected vessel.
-//     - Preservel relative camera rotation and distance between the switches.
-//   - For vessels that are too far away from each other camera is adjusted so what the new field of
-//     view has both the new and the old vessel.
-// - In switch mode shows brief info on the vessel being hovered.
 namespace EasyVesselSwitch {
 
 /// <summary>Main mod's class that monitors use interactions.</summary>
