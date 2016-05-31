@@ -137,11 +137,16 @@ public sealed class Controller : MonoBehaviour {
       SetHoveredVessel(Mouse.HoveredPart.vessel);
       if (Mouse.GetAllMouseButtonsDown() == switchMouseButton
           && hoveredVessel != null && hoveredVessel != FlightGlobals.ActiveVessel) {
-        var vesselToSelect = hoveredVessel;
+        var vesselToSelect = hoveredVessel;  // Save hovered vessel as it'll be reset on focus blur. 
         SetHoveredVessel(null);
-        if (!FlightGlobals.SetActiveVessel(vesselToSelect)) {
-          // Something is blocking. KSP should have reported it on the screen.
-          Logger.logWarning("Vessel switch aborted by FlightGlobals");
+        if (!IsVesselOwned(vesselToSelect)) {
+          // Cannot switch to unowned vessel. Invoke standard "soft" switch to have error message
+          // triggered.
+          FlightGlobals.SetActiveVessel(vesselToSelect);
+        } else {
+          // Use forced version since "soft" switch blocks on many normal situations (e.g. "on
+          // ladder" or "in atmosphere").
+          FlightGlobals.ForceSetActiveVessel(vesselToSelect);
         }
       }
     } else if (hoveredVessel != null) {
@@ -421,6 +426,13 @@ public sealed class Controller : MonoBehaviour {
     distance = Vector3.Distance(
         FlightGlobals.ActiveVessel.transform.position, vessel.transform.position);
     return distance > maxVesselDistance;
+  }
+
+  /// <summary>Tells is vessel is owned by the player.</summary>
+  /// <param name="vessel">Vessel to check.</param>
+  /// <returns><c>true</c> if player owns the vessel.</returns>
+  static bool IsVesselOwned(Vessel vessel) {
+    return vessel.DiscoveryInfo.Level == DiscoveryLevels.Owned;
   }
 }
 
