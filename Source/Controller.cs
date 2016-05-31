@@ -236,7 +236,7 @@ sealed class Controller : MonoBehaviour {
         camera.GetPivot().position = newPivotPos;
       } else {
         StartCoroutine(AnimateCameraPositionCoroutine(
-            camera.Target, oldInfo.cameraPos, newPivotPos, newInfo.anchorPos));
+            camera.Target, oldInfo.cameraPivotPos, newInfo.cameraPivotPos, newInfo.anchorPos));
       }
     }
 
