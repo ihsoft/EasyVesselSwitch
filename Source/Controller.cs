@@ -75,10 +75,8 @@ sealed class Controller : MonoBehaviour {
 
   /// <summary>Vessel which is currently hovered.</summary>
   Vessel hoveredVessel;
-  /// <summary>Tells if new camera needs to be adjused for close vessel switch.</summary>
-  bool needFixForCloseVesselsSwitch;
-  /// <summary>Tells if new camera needs to be adjused for distant vessel switch.</summary>
-  bool needFixForDistantVesselsSwitch;
+  /// <summary>Tells if camera needs to be adjused.</summary>
+  bool needCameraFix;
   /// <summary>Overaly window to show info about vessel under the mouse cursor.</summary>
   HintOverlay vesselInfoOverlay;
   /// <summary>Old vessel context.</summary>
@@ -162,12 +160,7 @@ sealed class Controller : MonoBehaviour {
         && cameraStabilizationMode != CameraStabilization.None) {
       oldInfo = new VesselInfo(fromVessel, FlightCamera.fetch);
       newInfo = new VesselInfo(toVessel);
-      float unusedVesselDistance;
-      if (!IsDistantVessel(toVessel, out unusedVesselDistance)) {
-        needFixForCloseVesselsSwitch = true;
-      } else {
-        needFixForDistantVesselsSwitch = true;
-      }
+      needCameraFix = true;
     }
   }
 
@@ -180,12 +173,15 @@ sealed class Controller : MonoBehaviour {
     }
     StartCoroutine(TimedHighlightCoroutine(
         vessel, newVesselHighlightTimeout, targetVesselHighlightColor));
-    if (needFixForCloseVesselsSwitch) {
-      needFixForCloseVesselsSwitch = false;
-      StabilizeCamera();
-    } else if (needFixForDistantVesselsSwitch) {
-      needFixForDistantVesselsSwitch = false;
-      AlignCamera();
+
+    if (needCameraFix) {
+      needCameraFix = false;
+      var vesselDistance = Vector3.Distance(oldInfo.anchorPos, newInfo.anchorPos);
+      if (vesselDistance <= maxVesselDistance) {
+        StabilizeCamera();
+      } else {
+        AlignCamera();
+      }
     }
   }
 
