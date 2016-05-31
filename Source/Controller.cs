@@ -276,8 +276,9 @@ sealed class Controller : MonoBehaviour {
     sb.Add("");
 
     // Give a hint when distance is too long.
-    float distanceBetweenVessels;
-    if (IsDistantVessel(vessel, out distanceBetweenVessels)) {
+    float distanceBetweenVessels = Vector3.Distance(
+        FlightGlobals.ActiveVessel.transform.position, vessel.transform.position);
+    if (distanceBetweenVessels > maxVesselDistance) {
       sb.Add(DistantVesselTargeted.Format(distanceBetweenVessels));
     }
 
@@ -404,22 +405,6 @@ sealed class Controller : MonoBehaviour {
           movementOffset + Vector3.Lerp(srcPivotPos, trgPivotPos, progress);
       yield return null;
     } while (progress < 1.0f && FlightCamera.fetch.Target == target);
-  }
-
-  /// <summary>
-  /// Tells if vessel is located too far from the curernt one for the camera stabilization.
-  /// </summary>
-  /// <remarks>Camera stabilization when switching ot a very distant vessel doesn't make sense.
-  /// Instead, player would like to get close to the vessel. Though, some UI improvement still can
-  /// be made if new camera orientation set so what the old vessel is in the FOV.</remarks>
-  /// <param name="vessel">A vessel to check distance to.</param>
-  /// <param name="distance">[out] An actual distance.</param>
-  /// <returns><c>true</c> if distance is too long. Maximum value is set via
-  /// <see cref="maxVesselDistance"/> and can be overwritten via settings file.</returns>
-  static bool IsDistantVessel(Vessel vessel, out float distance) {
-    distance = Vector3.Distance(
-        FlightGlobals.ActiveVessel.transform.position, vessel.transform.position);
-    return distance > maxVesselDistance;
   }
 
   /// <summary>Tells is vessel is owned by the player.</summary>
