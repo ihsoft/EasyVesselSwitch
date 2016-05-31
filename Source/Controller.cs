@@ -203,7 +203,7 @@ public sealed class Controller : MonoBehaviour {
       var rot = Quaternion.AngleAxis(angle, Vector3.Cross(newPivotUp, fromOldToNewDir));
       newCameraPos = newPivotPos - rot * (newPivotUp * oldCameraDistance);
     } else {
-      // In space just put camear on the opposite size and direct it to the old vessel. This way
+      // In space just put camera on the opposite side and direct it to the old vessel. This way
       // both old and new vessela will be in camera's field of view.
       newCameraPos =
           camera.GetPivot().transform.position - fromOldToNewDir.normalized * oldCameraDistance;
