@@ -158,7 +158,7 @@ public sealed class Controller : MonoBehaviour {
     if (fromVessel && fromVessel == FlightGlobals.ActiveVessel
         && cameraStabilizationMode != CameraStabilization.None) {
       oldCameraPos = FlightCamera.fetch.GetCameraTransform().position;
-      oldPivotPos = FlightCamera.fetch.GetPivot().transform.position;
+      oldPivotPos = FlightCamera.fetch.GetPivot().position;
       newVesselAnchorPos = toVessel.transform.position;
       float unusedVesselDistance;
       if (!IsDistantVessel(toVessel, out unusedVesselDistance)) {
@@ -190,8 +190,9 @@ public sealed class Controller : MonoBehaviour {
   void SetCameraOrientation() {
     var camera = FlightCamera.fetch;
     var vessel = FlightGlobals.ActiveVessel;
+    var newCameraPivotPos = camera.GetPivot().position;
     var oldCameraDistance = Vector3.Distance(oldCameraPos, oldPivotPos);
-    var fromOldToNewDir = oldPivotPos - camera.GetPivot().position;
+    var fromOldToNewDir = oldPivotPos - newCameraPivotPos;
     Vector3 newCameraPos;
 
     if (vessel.Landed) {
@@ -201,15 +202,13 @@ public sealed class Controller : MonoBehaviour {
       var oldPivotUp = FlightGlobals.getUpAxis(oldPivotPos);
       var oldCameraDir = oldPivotPos - oldCameraPos;
       var angle = Vector3.Angle(oldPivotUp, oldCameraDir);
-      var newPivotPos = camera.GetPivot().transform.position;
-      var newPivotUp = FlightGlobals.getUpAxis(newPivotPos);
+      var newPivotUp = FlightGlobals.getUpAxis(newCameraPivotPos);
       var rot = Quaternion.AngleAxis(angle, Vector3.Cross(newPivotUp, fromOldToNewDir));
-      newCameraPos = newPivotPos - rot * (newPivotUp * oldCameraDistance);
+      newCameraPos = newCameraPivotPos - rot * (newPivotUp * oldCameraDistance);
     } else {
       // In space just put camera on the opposite side and direct it to the old vessel. This way
       // both old and new vessela will be in camera's field of view.
-      newCameraPos =
-          camera.GetPivot().transform.position - fromOldToNewDir.normalized * oldCameraDistance;
+      newCameraPos = newCameraPivotPos - fromOldToNewDir.normalized * oldCameraDistance;
     }
     
     camera.SetCamCoordsFromPosition(newCameraPos);
@@ -221,21 +220,20 @@ public sealed class Controller : MonoBehaviour {
   /// to the new vessel or keeps vessel-to-camera rotation.</remarks>
   void StabilizeCamera() {
     var camera = FlightCamera.fetch;
-    var cameraTransfrom = FlightCamera.fetch.GetCameraTransform();
+    var newPivotPos = camera.GetPivot().position;
 
     if (cameraStabilizationMode == CameraStabilization.KeepDistanceAndRotation) {
       // Restore old pivot and camera position to have original rotations applied to the camera.
       // Then, either animate the pivot or set it instantly. KSP code will move the camera
       // following the pivot without changing its rotation or distance.
       Logger.logInfo("Fix camera position while keeping distance and orientation");
-      var tgtPivotPosition = camera.GetPivot().transform.position;
-      camera.GetPivot().transform.position = oldPivotPos;
+      camera.GetPivot().position = oldPivotPos;
       camera.SetCamCoordsFromPosition(oldCameraPos);
       if (cameraStabilizationAnimationDuration < float.Epsilon) {
-        camera.GetPivot().transform.position = tgtPivotPosition;
+        camera.GetPivot().position = newPivotPos;
       } else {
         StartCoroutine(AnimateCameraPositionCoroutine(
-            camera.Target, camera.GetPivot().position, tgtPivotPosition, newVesselAnchorPos));
+            camera.Target, oldPivotPos, newPivotPos, newVesselAnchorPos));
       }
     }
 
@@ -250,8 +248,7 @@ public sealed class Controller : MonoBehaviour {
         camera.GetCameraTransform().position = oldCameraPos;
       } else {
         StartCoroutine(AnimateCameraPivotCoroutine(
-            camera.Target, oldCameraPos,
-            oldPivotPos, camera.GetPivot().transform.position, newVesselAnchorPos));
+            camera.Target, oldCameraPos, oldPivotPos, newPivotPos, newVesselAnchorPos));
       }
     }
   }
@@ -421,8 +418,8 @@ public sealed class Controller : MonoBehaviour {
   /// <returns><c>true</c> if distance is too long. Maximum value is set via
   /// <see cref="maxVesselDistance"/> and can be overwritten via settings file.</returns>
   static bool IsDistantVessel(Vessel vessel, out float distance) {
-    distance =
-        (FlightGlobals.ActiveVessel.transform.position - vessel.transform.position).magnitude;
+    distance = Vector3.Distance(
+        FlightGlobals.ActiveVessel.transform.position, vessel.transform.position);
     return distance > maxVesselDistance;
   }
 }
