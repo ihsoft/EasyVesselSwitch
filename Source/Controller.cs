@@ -75,18 +75,16 @@ sealed class Controller : MonoBehaviour {
 
   /// <summary>Vessel which is currently hovered.</summary>
   Vessel hoveredVessel;
-  /// <summary>Camera position before vessel change.</summary>
-  Vector3 oldCameraPos;
-  /// <summary>Camera focus position before vessel change.</summary>
-  Vector3 oldPivotPos;
-  /// <summary>Position of the new vessel at the moment of switch.</summary>
-  Vector3 newVesselAnchorPos;
   /// <summary>Tells if new camera needs to be adjused for close vessel switch.</summary>
   bool needFixForCloseVesselsSwitch;
   /// <summary>Tells if new camera needs to be adjused for distant vessel switch.</summary>
   bool needFixForDistantVesselsSwitch;
   /// <summary>Overaly window to show info about vessel under the mouse cursor.</summary>
   HintOverlay vesselInfoOverlay;
+  /// <summary>Old vessel context.</summary>
+  VesselInfo oldInfo;
+  /// <summary>New vessel context.</summary>
+  VesselInfo newInfo;
 
   /// <summary>Overridden from MonoBehavior.</summary>
   /// <remarks>Registers listeners, reads configuration and creates global UI objects.</remarks>
@@ -162,9 +160,8 @@ sealed class Controller : MonoBehaviour {
   void OnVesselSwitch(Vessel fromVessel, Vessel toVessel) {
     if (fromVessel != null && fromVessel == FlightGlobals.ActiveVessel
         && cameraStabilizationMode != CameraStabilization.None) {
-      oldCameraPos = FlightCamera.fetch.GetCameraTransform().position;
-      oldPivotPos = FlightCamera.fetch.GetPivot().position;
-      newVesselAnchorPos = toVessel.transform.position;
+      oldInfo = new VesselInfo(fromVessel, FlightCamera.fetch);
+      newInfo = new VesselInfo(toVessel);
       float unusedVesselDistance;
       if (!IsDistantVessel(toVessel, out unusedVesselDistance)) {
         needFixForCloseVesselsSwitch = true;
@@ -178,6 +175,9 @@ sealed class Controller : MonoBehaviour {
   /// <remarks>Highlights newly selected vessel and handles camear stabilization.</remarks>
   /// <param name="vessel">A new active vessel.</param>
   void OnVesselChange(Vessel vessel) {
+    if (newInfo != null) {
+      newInfo.UpdateCameraFrom(FlightCamera.fetch);
+    }
     StartCoroutine(TimedHighlightCoroutine(
         vessel, newVesselHighlightTimeout, targetVesselHighlightColor));
     if (needFixForCloseVesselsSwitch) {
@@ -193,29 +193,27 @@ sealed class Controller : MonoBehaviour {
   /// <remarks>When usual stabilization modes are not feasible position new camera so what that the
   /// old vessel is in the field of view as well as the new vessel.</remarks>
   void AlignCamera() {
-    var camera = FlightCamera.fetch;
-    var vessel = FlightGlobals.ActiveVessel;
-    var newCameraPivotPos = camera.GetPivot().position;
-    var oldCameraDistance = Vector3.Distance(oldCameraPos, oldPivotPos);
-    var fromOldToNewDir = oldPivotPos - newCameraPivotPos;
-    Vector3 newCameraPos;
+    var oldCameraDistance = Vector3.Distance(oldInfo.cameraPos, oldInfo.cameraPivotPos);
+    var fromOldToNewDir = oldInfo.cameraPivotPos - newInfo.cameraPivotPos;
 
-    if (vessel.Landed) {
+    Vector3 newCameraPos;
+    if (FlightGlobals.ActiveVessel.Landed) {
       // When vessel is landed the new camera position may end up under the surface. To work it
       // around keep the same angle between line of sight and vessel's up axis as it was with the
       // previous vessel.
-      var oldPivotUp = FlightGlobals.getUpAxis(oldPivotPos);
-      var oldCameraDir = oldPivotPos - oldCameraPos;
+      var oldPivotUp = FlightGlobals.getUpAxis(oldInfo.cameraPivotPos);
+      var oldCameraDir = oldInfo.cameraPivotPos - oldInfo.cameraPos;
       var angle = Vector3.Angle(oldPivotUp, oldCameraDir);
-      var newPivotUp = FlightGlobals.getUpAxis(newCameraPivotPos);
+      var newPivotUp = FlightGlobals.getUpAxis(newInfo.cameraPivotPos);
       var rot = Quaternion.AngleAxis(angle, Vector3.Cross(newPivotUp, fromOldToNewDir));
-      newCameraPos = newCameraPivotPos - rot * (newPivotUp * oldCameraDistance);
+      newCameraPos = newInfo.cameraPivotPos - rot * (newPivotUp * oldCameraDistance);
     } else {
       // In space just put camera on the opposite side and direct it to the old vessel. This way
       // both old and new vessela will be in camera's field of view.
-      newCameraPos = newCameraPivotPos - fromOldToNewDir.normalized * oldCameraDistance;
+      newCameraPos = newInfo.cameraPivotPos - fromOldToNewDir.normalized * oldCameraDistance;
     }
     
+    var camera = FlightCamera.fetch;
     camera.SetCamCoordsFromPosition(newCameraPos);
     camera.GetCameraTransform().position = newCameraPos;
   }
@@ -232,13 +230,13 @@ sealed class Controller : MonoBehaviour {
       // Then, either animate the pivot or set it instantly. KSP code will move the camera
       // following the pivot without changing its rotation or distance.
       Logger.logInfo("Fix camera position while keeping distance and orientation");
-      camera.GetPivot().position = oldPivotPos;
-      camera.SetCamCoordsFromPosition(oldCameraPos);
+      camera.GetPivot().position = oldInfo.cameraPivotPos;
+      camera.SetCamCoordsFromPosition(oldInfo.cameraPos);
       if (cameraStabilizationAnimationDuration < float.Epsilon) {
         camera.GetPivot().position = newPivotPos;
       } else {
         StartCoroutine(AnimateCameraPositionCoroutine(
-            camera.Target, oldPivotPos, newPivotPos, newVesselAnchorPos));
+            camera.Target, oldInfo.cameraPos, newPivotPos, newInfo.anchorPos));
       }
     }
 
@@ -249,11 +247,12 @@ sealed class Controller : MonoBehaviour {
       // and reset the camera position to have only direction recalculated.
       Logger.logInfo("Fix camera focus while keeping its position");
       if (cameraStabilizationAnimationDuration < float.Epsilon) {
-        camera.SetCamCoordsFromPosition(oldCameraPos);
-        camera.GetCameraTransform().position = oldCameraPos;
+        camera.SetCamCoordsFromPosition(oldInfo.cameraPos);
+        camera.GetCameraTransform().position = oldInfo.cameraPos;
       } else {
         StartCoroutine(AnimateCameraPivotCoroutine(
-            camera.Target, oldCameraPos, oldPivotPos, newPivotPos, newVesselAnchorPos));
+            camera.Target, oldInfo.cameraPos,
+            oldInfo.cameraPivotPos, newPivotPos, newInfo.anchorPos));
       }
     }
   }
