@@ -185,14 +185,14 @@ public sealed class Controller : MonoBehaviour {
       StabilizeCamera();
     } else if (needFixForDistantVesselsSwitch) {
       needFixForDistantVesselsSwitch = false;
-      SetCameraOrientation();
+      AlignCamera();
     }
   }
 
   /// <summary>Aligns new camera FOV when switching to a distant vessel.</summary>
   /// <remarks>When usual stabilization modes are not feasible position new camera so what that the
   /// old vessel is in the field of view as well as the new vessel.</remarks>
-  void SetCameraOrientation() {
+  void AlignCamera() {
     var camera = FlightCamera.fetch;
     var vessel = FlightGlobals.ActiveVessel;
     var newCameraPivotPos = camera.GetPivot().position;
