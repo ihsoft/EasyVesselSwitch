@@ -76,9 +76,9 @@ public sealed class Controller : MonoBehaviour {
   /// <summary>Vessel which is currently hovered.</summary>
   Vessel hoveredVessel;
   /// <summary>Camera position before vessel change.</summary>
-  Vector3 previousCameraPosition;
+  Vector3 oldCameraPos;
   /// <summary>Camera focus position before vessel change.</summary>
-  Vector3 previousPivotPosition;
+  Vector3 oldPivotPos;
   /// <summary>Position of the new vessel at the moment of switch.</summary>
   Vector3 newVesselAnchorPos;
   /// <summary>Tells if new camera needs to be adjused for close vessel switch.</summary>
@@ -157,8 +157,8 @@ public sealed class Controller : MonoBehaviour {
   void OnVesselSwitch(Vessel fromVessel, Vessel toVessel) {
     if (fromVessel && fromVessel == FlightGlobals.ActiveVessel
         && cameraStabilizationMode != CameraStabilization.None) {
-      previousCameraPosition = FlightCamera.fetch.GetCameraTransform().position;
-      previousPivotPosition = FlightCamera.fetch.GetPivot().transform.position;
+      oldCameraPos = FlightCamera.fetch.GetCameraTransform().position;
+      oldPivotPos = FlightCamera.fetch.GetPivot().transform.position;
       newVesselAnchorPos = toVessel.transform.position;
       float unusedVesselDistance;
       if (!IsDistantVessel(toVessel, out unusedVesselDistance)) {
@@ -190,16 +190,16 @@ public sealed class Controller : MonoBehaviour {
   void SetCameraOrientation() {
     var camera = FlightCamera.fetch;
     var vessel = FlightGlobals.ActiveVessel;
-    var oldCameraDistance = Vector3.Distance(previousCameraPosition, previousPivotPosition);
-    var fromOldToNewDir = previousPivotPosition - camera.GetPivot().position;
+    var oldCameraDistance = Vector3.Distance(oldCameraPos, oldPivotPos);
+    var fromOldToNewDir = oldPivotPos - camera.GetPivot().position;
     Vector3 newCameraPos;
 
     if (vessel.Landed) {
       // When vessel is landed the new camera position may end up under the surface. To work it
       // around keep the same angle between line of sight and vessel's up axis as it was with the
       // previous vessel.
-      var oldPivotUp = FlightGlobals.getUpAxis(previousPivotPosition);
-      var oldCameraDir = previousPivotPosition - previousCameraPosition;
+      var oldPivotUp = FlightGlobals.getUpAxis(oldPivotPos);
+      var oldCameraDir = oldPivotPos - oldCameraPos;
       var angle = Vector3.Angle(oldPivotUp, oldCameraDir);
       var newPivotPos = camera.GetPivot().transform.position;
       var newPivotUp = FlightGlobals.getUpAxis(newPivotPos);
@@ -229,12 +229,12 @@ public sealed class Controller : MonoBehaviour {
       // following the pivot without changing its rotation or distance.
       Logger.logInfo("Fix camera position while keeping distance and orientation");
       var tgtPivotPosition = camera.GetPivot().transform.position;
-      camera.GetPivot().transform.position = previousPivotPosition;
-      camera.SetCamCoordsFromPosition(previousCameraPosition);
+      camera.GetPivot().transform.position = oldPivotPos;
+      camera.SetCamCoordsFromPosition(oldCameraPos);
       if (cameraStabilizationAnimationDuration < float.Epsilon) {
         camera.GetPivot().transform.position = tgtPivotPosition;
       } else {
-        StartCoroutine(AnimateCameraPivotPositionCoroutine(
+        StartCoroutine(AnimateCameraPositionCoroutine(
             camera.Target, camera.GetPivot().position, tgtPivotPosition, newVesselAnchorPos));
       }
     }
@@ -246,12 +246,12 @@ public sealed class Controller : MonoBehaviour {
       // and reset the camera position to have only direction recalculated.
       Logger.logInfo("Fix camera focus while keeping its position");
       if (cameraStabilizationAnimationDuration < float.Epsilon) {
-        camera.SetCamCoordsFromPosition(previousCameraPosition);
-        camera.GetCameraTransform().position = previousCameraPosition;
+        camera.SetCamCoordsFromPosition(oldCameraPos);
+        camera.GetCameraTransform().position = oldCameraPos;
       } else {
-        StartCoroutine(AnimateCameraFocusCoroutine(
-            camera.Target, previousCameraPosition,
-            previousPivotPosition, camera.GetPivot().transform.position, newVesselAnchorPos));
+        StartCoroutine(AnimateCameraPivotCoroutine(
+            camera.Target, oldCameraPos,
+            oldPivotPos, camera.GetPivot().transform.position, newVesselAnchorPos));
       }
     }
   }
@@ -358,14 +358,14 @@ public sealed class Controller : MonoBehaviour {
   /// time of the switch. And then a difference is added given the current vessel position.
   /// </remarks>
   /// <param name="target">A camera target. If it's changed the animation will abort.</param>
-  /// <param name="cameraPosition">A position of the camera to preserve.</param>
-  /// <param name="srcPivotPosition">A starting focus position.</param>
-  /// <param name="trgPivotPosition">An ending focus position.</param>
+  /// <param name="cameraPos">A position of the camera to preserve.</param>
+  /// <param name="srcPivotPos">A starting focus position.</param>
+  /// <param name="trgPivotPos">An ending focus position.</param>
   /// <param name="newVesselAnchorPos">Position of the new vessel at the moment of switch.</param>
   /// <returns><c>null</c> until animation is done or aborted.</returns>
-  static IEnumerator AnimateCameraFocusCoroutine(
-      Transform target, Vector3 cameraPosition,
-      Vector3 srcPivotPosition, Vector3 trgPivotPosition, Vector3 newVesselAnchorPos) {
+  static IEnumerator AnimateCameraPivotCoroutine(
+      Transform target, Vector3 cameraPos,
+      Vector3 srcPivotPos, Vector3 trgPivotPos, Vector3 newVesselAnchorPos) {
     float startTime = Time.unscaledTime;
     float progress;
     do {
@@ -374,8 +374,8 @@ public sealed class Controller : MonoBehaviour {
       progress = (Time.unscaledTime - startTime) / cameraStabilizationAnimationDuration;
       var camera = FlightCamera.fetch;
       camera.GetPivot().position =
-          movementOffset + Vector3.Lerp(srcPivotPosition, trgPivotPosition, progress);
-      var newCameraPos = movementOffset + cameraPosition;
+          movementOffset + Vector3.Lerp(srcPivotPos, trgPivotPos, progress);
+      var newCameraPos = movementOffset + cameraPos;
       camera.SetCamCoordsFromPosition(newCameraPos);
       camera.GetCameraTransform().position = newCameraPos;
       yield return null;
@@ -390,13 +390,12 @@ public sealed class Controller : MonoBehaviour {
   /// time of the switch. And then a difference is added given the current vessel position.
   /// </remarks>
   /// <param name="target">A camera target. If it's changed the animation will abort.</param>
-  /// <param name="srcPivotPosition">A starting focus position.</param>
-  /// <param name="trgPivotPosition">An ending focus position.</param>
+  /// <param name="srcPivotPos">A starting focus position.</param>
+  /// <param name="trgPivotPos">An ending focus position.</param>
   /// <param name="newVesselAnchorPos">Position of the new vessel at the moment of switch.</param>
   /// <returns></returns>
-  static IEnumerator AnimateCameraPivotPositionCoroutine(
-      Transform target, Vector3 srcPivotPosition, Vector3 trgPivotPosition,
-      Vector3 newVesselAnchorPos) {
+  static IEnumerator AnimateCameraPositionCoroutine(
+      Transform target, Vector3 srcPivotPos, Vector3 trgPivotPos, Vector3 newVesselAnchorPos) {
     float startTime = Time.unscaledTime;
     float progress;
     do {
@@ -406,7 +405,7 @@ public sealed class Controller : MonoBehaviour {
       // Only animate the pivot position. The camera's position will be adjusted by the FlighCamera
       // code.
       FlightCamera.fetch.GetPivot().transform.position =
-          movementOffset + Vector3.Lerp(srcPivotPosition, trgPivotPosition, progress);
+          movementOffset + Vector3.Lerp(srcPivotPos, trgPivotPos, progress);
       yield return null;
     } while (progress < 1.0f && FlightCamera.fetch.Target == target);
   }
