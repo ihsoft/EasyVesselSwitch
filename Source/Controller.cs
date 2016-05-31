@@ -160,7 +160,7 @@ sealed class Controller : MonoBehaviour {
   /// <param name="fromVessel">A vessel prior the switch.</param>
   /// <param name="toVessel">A new active vessel.</param>  
   void OnVesselSwitch(Vessel fromVessel, Vessel toVessel) {
-    if (fromVessel && fromVessel == FlightGlobals.ActiveVessel
+    if (fromVessel != null && fromVessel == FlightGlobals.ActiveVessel
         && cameraStabilizationMode != CameraStabilization.None) {
       oldCameraPos = FlightCamera.fetch.GetCameraTransform().position;
       oldPivotPos = FlightCamera.fetch.GetPivot().position;
@@ -176,10 +176,10 @@ sealed class Controller : MonoBehaviour {
 
   /// <summary>GameEvents callback.</summary>
   /// <remarks>Highlights newly selected vessel and handles camear stabilization.</remarks>
-  /// <param name="newVessel">A new active vessel.</param>  
-  void OnVesselChange(Vessel newVessel) {
+  /// <param name="vessel">A new active vessel.</param>
+  void OnVesselChange(Vessel vessel) {
     StartCoroutine(TimedHighlightCoroutine(
-        newVessel, newVesselHighlightTimeout, targetVesselHighlightColor));
+        vessel, newVesselHighlightTimeout, targetVesselHighlightColor));
     if (needFixForCloseVesselsSwitch) {
       needFixForCloseVesselsSwitch = false;
       StabilizeCamera();
