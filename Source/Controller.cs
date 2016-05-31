@@ -16,7 +16,7 @@ namespace EasyVesselSwitch {
 /// <summary>Main mod's class that monitors use interactions.</summary>
 [KSPAddon(KSPAddon.Startup.Flight, false /*once*/)]
 [PersistentFieldsFile("EasyVesselSwitch/Plugins/PluginData/settings.cfg", "")]
-public sealed class Controller : MonoBehaviour {
+sealed class Controller : MonoBehaviour {
   // ===== BEGIN of persistent fields section.
   [PersistentField("UI/switchModifier")]
   static KeyModifiers switchModifier = KeyModifiers.AnyAlt;
@@ -62,7 +62,7 @@ public sealed class Controller : MonoBehaviour {
       "Camera stabilization mode changed to: {0}";
   Message<float> DistantVesselTargeted = "Vessel is too distant: {0:N0}m";
   // ===== END of localizable strings
-  
+
   /// <summary>A mode of camera stabilization.</summary>
   enum CameraStabilization {
     /// <summary>No stabilization. Allow dfeault KSP behavior.</summary>
@@ -85,7 +85,7 @@ public sealed class Controller : MonoBehaviour {
   bool needFixForCloseVesselsSwitch;
   /// <summary>Tells if new camera needs to be adjused for distant vessel switch.</summary>
   bool needFixForDistantVesselsSwitch;
-  /// <summary>Overaly window to show info about vessel under mouse cursor.</summary>
+  /// <summary>Overaly window to show info about vessel under the mouse cursor.</summary>
   HintOverlay vesselInfoOverlay;
 
   /// <summary>Overridden from MonoBehavior.</summary>
