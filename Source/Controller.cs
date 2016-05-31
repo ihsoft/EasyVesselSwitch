@@ -223,7 +223,6 @@ sealed class Controller : MonoBehaviour {
   /// to the new vessel or keeps vessel-to-camera rotation.</remarks>
   void StabilizeCamera() {
     var camera = FlightCamera.fetch;
-    var newPivotPos = camera.GetPivot().position;
 
     if (cameraStabilizationMode == CameraStabilization.KeepDistanceAndRotation) {
       // Restore old pivot and camera position to have original rotations applied to the camera.
@@ -233,7 +232,7 @@ sealed class Controller : MonoBehaviour {
       camera.GetPivot().position = oldInfo.cameraPivotPos;
       camera.SetCamCoordsFromPosition(oldInfo.cameraPos);
       if (cameraStabilizationAnimationDuration < float.Epsilon) {
-        camera.GetPivot().position = newPivotPos;
+        camera.GetPivot().position = newInfo.cameraPivotPos;
       } else {
         StartCoroutine(AnimateCameraPositionCoroutine(
             camera.Target, oldInfo.cameraPivotPos, newInfo.cameraPivotPos, newInfo.anchorPos));
@@ -252,7 +251,7 @@ sealed class Controller : MonoBehaviour {
       } else {
         StartCoroutine(AnimateCameraPivotCoroutine(
             camera.Target, oldInfo.cameraPos,
-            oldInfo.cameraPivotPos, newPivotPos, newInfo.anchorPos));
+            oldInfo.cameraPivotPos, newInfo.cameraPivotPos, newInfo.anchorPos));
       }
     }
   }
