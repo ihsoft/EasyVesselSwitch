@@ -270,39 +270,38 @@ sealed class Controller : MonoBehaviour {
   /// <summary>Displays brief information about the vessel under mouse cursor.</summary>
   /// <remarks><see cref="hoveredVessel"/> must not be <c>null</c>.</remarks>
   void ShowHoveredVesselInfo() {
-    var vessel = hoveredVessel;
     var sb = new List<string>();
-    sb.Add(vessel == FlightGlobals.ActiveVessel ? CurrentVesselMsg : SwitchToMsg);
+    sb.Add(hoveredVessel == FlightGlobals.ActiveVessel ? CurrentVesselMsg : SwitchToMsg);
     sb.Add("");
 
     // Give a hint when distance is too long.
     float distanceBetweenVessels = Vector3.Distance(
-        FlightGlobals.ActiveVessel.transform.position, vessel.transform.position);
+        FlightGlobals.ActiveVessel.transform.position, hoveredVessel.transform.position);
     if (distanceBetweenVessels > maxVesselDistance) {
       sb.Add(DistantVesselTargeted.Format(distanceBetweenVessels));
     }
 
-    if (vessel.isEVA) {
-      var protoCrewMember = vessel.GetVesselCrew()[0];
-      sb.Add(KerbalTitleMsg.Format(vessel.GetName(),
+    if (hoveredVessel.isEVA) {
+      var protoCrewMember = hoveredVessel.GetVesselCrew()[0];
+      sb.Add(KerbalTitleMsg.Format(hoveredVessel.GetName(),
                                    protoCrewMember.experienceTrait.Title,
                                    protoCrewMember.experienceLevel));
-      var kerbalEva = vessel.GetComponent<KerbalEVA>();
+      var kerbalEva = hoveredVessel.GetComponent<KerbalEVA>();
       sb.Add(KerbalEvaFuelMsg.Format(kerbalEva.Fuel));
     } else {
-      if (vessel.vesselType == VesselType.Unknown) {
+      if (hoveredVessel.vesselType == VesselType.Unknown) {
         // Unknown vessels are likely dropped parts or assemblies.
-        if (vessel.parts.Count == 1) {
-          sb.Add(SinglePartTitleMsg.Format(vessel.vesselName));
+        if (hoveredVessel.parts.Count == 1) {
+          sb.Add(SinglePartTitleMsg.Format(hoveredVessel.vesselName));
         } else {
-          sb.Add(AssemblyTitleMsg.Format(vessel.vesselName));
+          sb.Add(AssemblyTitleMsg.Format(hoveredVessel.vesselName));
         }
       } else {
-        sb.Add(VesselTitleMsg.Format(vessel.vesselType, vessel.vesselName));
+        sb.Add(VesselTitleMsg.Format(hoveredVessel.vesselType, hoveredVessel.vesselName));
       }
-      sb.Add(VesselMassMsg.Format(vessel.GetTotalMass()));
-      sb.Add(vessel.IsControllable ? VesselIsControllable : VesselIsNotControllable);
-      foreach (var res in vessel.GetActiveResources()) {
+      sb.Add(VesselMassMsg.Format(hoveredVessel.GetTotalMass()));
+      sb.Add(hoveredVessel.IsControllable ? VesselIsControllable : VesselIsNotControllable);
+      foreach (var res in hoveredVessel.GetActiveResources()) {
         sb.Add(VesselResourceMsg.Format(res.info.name, res.amount / res.maxAmount));
       }
     }
