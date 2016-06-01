@@ -135,7 +135,7 @@ sealed class Controller : MonoBehaviour {
           && hoveredVessel != null && hoveredVessel != FlightGlobals.ActiveVessel) {
         var vesselToSelect = hoveredVessel;  // Save hovered vessel as it'll be reset on focus blur. 
         SetHoveredVessel(null);
-        if (!IsVesselOwned(vesselToSelect)) {
+        if (hoveredVessel.DiscoveryInfo.Level != DiscoveryLevels.Owned) {
           // Cannot switch to unowned vessel. Invoke standard "soft" switch to have error message
           // triggered.
           FlightGlobals.SetActiveVessel(vesselToSelect);
@@ -404,13 +404,6 @@ sealed class Controller : MonoBehaviour {
           movementOffset + Vector3.Lerp(srcPivotPos, trgPivotPos, progress);
       yield return null;
     } while (progress < 1.0f && FlightCamera.fetch.Target == target);
-  }
-
-  /// <summary>Tells is vessel is owned by the player.</summary>
-  /// <param name="vessel">Vessel to check.</param>
-  /// <returns><c>true</c> if player owns the vessel.</returns>
-  static bool IsVesselOwned(Vessel vessel) {
-    return vessel.DiscoveryInfo.Level == DiscoveryLevels.Owned;
   }
 }
 
