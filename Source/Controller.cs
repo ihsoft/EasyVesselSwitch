@@ -128,7 +128,7 @@ sealed class Controller : MonoBehaviour {
           CameraStabilizationModeChanged.Format(cameraStabilizationMode));
     }
 
-    // handle the switch.
+    // Handle the switch.
     if (Mouse.HoveredPart && EventChecker.IsModifierCombinationPressed(switchModifier)) {
       SetHoveredVessel(Mouse.HoveredPart.vessel);
       if (Mouse.GetAllMouseButtonsDown() == switchMouseButton
@@ -234,8 +234,8 @@ sealed class Controller : MonoBehaviour {
 
     if (cameraStabilizationMode == CameraStabilization.KeepPosition) {
       // Restore old camera position and recalculate camera orientation. KSP code always orient
-      // camera on the pivot. When animation is disabled then just setting the p[osition is enough
-      // since the pivot is set to the new vessel. When anuimation is enabled we animate the pivot
+      // camera on the pivot. When animation is disabled then just setting the position is enough
+      // since the pivot is set to the new vessel. When animation is enabled we animate the pivot
       // and reset the camera position to have only direction recalculated.
       Logger.logInfo("Fix camera focus while keeping its position");
       if (cameraStabilizationAnimationDuration < float.Epsilon) {
