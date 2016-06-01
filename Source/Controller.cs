@@ -168,9 +168,7 @@ sealed class Controller : MonoBehaviour {
   /// <remarks>Highlights newly selected vessel and handles camear stabilization.</remarks>
   /// <param name="vessel">A new active vessel.</param>
   void OnVesselChange(Vessel vessel) {
-    if (newInfo != null) {
-      newInfo.UpdateCameraFrom(FlightCamera.fetch);
-    }
+    newInfo.UpdateCameraFrom(FlightCamera.fetch);
     StartCoroutine(TimedHighlightCoroutine(
         vessel, newVesselHighlightTimeout, targetVesselHighlightColor));
 

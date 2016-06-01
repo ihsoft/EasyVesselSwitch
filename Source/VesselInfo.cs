@@ -8,7 +8,7 @@ using UnityEngine;
 namespace EasyVesselSwitch {
 
 /// <summary>Vessel &amp; camera context used when switching.</summary>
-sealed class VesselInfo {
+struct VesselInfo {
   /// <summary>Position of the new vessel at the moment of switch.</summary>
   public Vector3 anchorPos;
   /// <summary>Camera position before vessel change.</summary>
@@ -19,6 +19,8 @@ sealed class VesselInfo {
   /// <summary>Captures vessel info.</summary>  
   public VesselInfo(Vessel vessel) {
     anchorPos = vessel.transform.position;
+    cameraPos = Vector3.zero;
+    cameraPivotPos = Vector3.zero;
   }
   
   /// <summary>Captures vessel and camera info.</summary>  
