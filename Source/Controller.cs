@@ -171,10 +171,13 @@ sealed class Controller : MonoBehaviour {
   /// <remarks>Highlights newly selected vessel and handles camear stabilization.</remarks>
   /// <param name="vessel">A new active vessel.</param>
   void OnVesselChange(Vessel vessel) {
-    newInfo.UpdateCameraFrom(FlightCamera.fetch);
+    // Temporarily highlight the new vessel. 
     StartCoroutine(TimedHighlightCoroutine(
         vessel, newVesselHighlightTimeout, targetVesselHighlightColor));
 
+    // Handle camera stabilization if needed.
+    var camera = FlightCamera.fetch;
+    newInfo.UpdateCameraFrom(camera);
     if (needCameraFix) {
       needCameraFix = false;
       var vesselDistance = Vector3.Distance(oldInfo.anchorPos, newInfo.anchorPos);
