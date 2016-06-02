@@ -58,8 +58,7 @@ sealed class Controller : MonoBehaviour {
   Message<double> KerbalEvaFuelMsg = "EVA propellant: {0:F3}";
   Message VesselIsControllable = "Is controllable: YES";
   Message VesselIsNotControllable = "Is controllable: NO";
-  Message<CameraStabilization> CameraStabilizationModeChanged =
-      "Camera stabilization mode changed to: {0}";
+  Message<CameraStabilization> CameraStabilizationModeChanged = "EVS stabilization: {0}";
   Message<float> DistantVesselTargeted = "Vessel is too distant: {0:N0}m";
   // ===== END of localizable strings
 
