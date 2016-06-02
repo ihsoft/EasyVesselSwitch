@@ -120,9 +120,13 @@ sealed class Controller : MonoBehaviour {
 
     // Handle stabilization mode switch. 
     if (Input.GetKeyDown(switchStabilizationModeKey)) {
-      cameraStabilizationMode = cameraStabilizationMode == CameraStabilization.KeepPosition
-          ? CameraStabilization.KeepDistanceAndRotation
-          : CameraStabilization.KeepPosition;
+      if (cameraStabilizationMode == CameraStabilization.None) {
+        cameraStabilizationMode = CameraStabilization.KeepPosition;
+      } else if (cameraStabilizationMode == CameraStabilization.KeepPosition) {
+        cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
+      } else {
+        cameraStabilizationMode = CameraStabilization.None;
+      }
       ScreenMessaging.ShowPriorityScreenMessage(
           CameraStabilizationModeChanged.Format(cameraStabilizationMode));
     }
