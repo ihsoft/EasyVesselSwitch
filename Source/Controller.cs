@@ -132,15 +132,15 @@ sealed class Controller : MonoBehaviour {
       SetHoveredVessel(Mouse.HoveredPart.vessel);
       if (Mouse.GetAllMouseButtonsDown() == switchMouseButton
           && hoveredVessel != null && hoveredVessel != FlightGlobals.ActiveVessel) {
-        var vesselToSelect = hoveredVessel;  // Save hovered vessel as it'll be reset on focus blur. 
-        SetHoveredVessel(null);
         if (hoveredVessel.DiscoveryInfo.Level != DiscoveryLevels.Owned) {
           // Cannot switch to unowned vessel. Invoke standard "soft" switch to have error message
           // triggered.
-          FlightGlobals.SetActiveVessel(vesselToSelect);
+          FlightGlobals.SetActiveVessel(hoveredVessel);
         } else {
           // Use forced version since "soft" switch blocks on many normal situations (e.g. "on
           // ladder" or "in atmosphere").
+          var vesselToSelect = hoveredVessel;  // Save hovered vessel as it'll be reset on blur. 
+          SetHoveredVessel(null);
           FlightGlobals.ForceSetActiveVessel(vesselToSelect);
         }
       }
