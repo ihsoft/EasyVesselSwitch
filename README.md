@@ -1,4 +1,4 @@
-# KSP: Easy Vessel Switch (EVS)
+# Easy Vessel Switch (EVS)
 ####Mod for [Kerbal Space Program](http://www.kerbalspaceprogram.com/)
 
 A mod to make vessel switching more user friendly.
