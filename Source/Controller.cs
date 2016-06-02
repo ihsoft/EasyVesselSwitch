@@ -124,7 +124,7 @@ sealed class Controller : MonoBehaviour {
       cameraStabilizationMode = cameraStabilizationMode == CameraStabilization.KeepPosition
           ? CameraStabilization.KeepDistanceAndRotation
           : CameraStabilization.KeepPosition;
-      ScreenMessaging.ShowInfoScreenMessage(
+      ScreenMessaging.ShowPriorityScreenMessage(
           CameraStabilizationModeChanged.Format(cameraStabilizationMode));
     }
 
