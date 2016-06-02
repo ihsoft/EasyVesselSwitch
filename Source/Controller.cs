@@ -82,6 +82,8 @@ sealed class Controller : MonoBehaviour {
   VesselInfo oldInfo;
   /// <summary>New vessel context.</summary>
   VesselInfo newInfo;
+  /// <summary>Defines if currently selected vessel was a result of EVS mouse click event.</summary>
+  bool evsSwitchAction;
 
   /// <summary>Overridden from MonoBehavior.</summary>
   /// <remarks>Registers listeners, reads configuration and creates global UI objects.</remarks>
@@ -146,6 +148,7 @@ sealed class Controller : MonoBehaviour {
           var vesselToSelect = hoveredVessel;  // Save hovered vessel as it'll be reset on blur. 
           SetHoveredVessel(null);
           FlightGlobals.ForceSetActiveVessel(vesselToSelect);
+          evsSwitchAction = true;
         }
       }
     } else if (hoveredVessel != null) {
@@ -180,13 +183,32 @@ sealed class Controller : MonoBehaviour {
     newInfo.UpdateCameraFrom(camera);
     if (needCameraFix) {
       needCameraFix = false;
-      var vesselDistance = Vector3.Distance(oldInfo.anchorPos, newInfo.anchorPos);
-      if (vesselDistance <= maxVesselDistance) {
-        StabilizeCamera();
+      // Camera position cannot be transitioned between any modes. Some modes (e.g. LOCKED) don't
+      // allow the camera to be placed at any place. Don't do camera stablization or
+      // aligning for such modes. In the modes that allow free camera position the transformations
+      // can be very different so, just copy source mode into the target vessel.
+      // TODO(IgorZ): Find a way to do the translation between different modes. 
+      if (Vector3.Distance(oldInfo.anchorPos, newInfo.anchorPos) > maxVesselDistance) {
+        // On the distant vessels respect camera modes of the both vessels. If either of them is not
+        // "free" then just fallback to the default behavior (restore latest known position).
+        if (IsFreeCameraPositionMode(oldInfo.cameraMode)
+            && IsFreeCameraPositionMode(newInfo.cameraMode)) {
+          SetCurrentCameraMode(oldInfo.cameraMode);  // Sync modes to match transformations.
+          AlignCamera();
+        }
       } else {
-        AlignCamera();
+        // On close vessels if source mode is "free" then substitute target mode with it. Only do so
+        // when mouse select is used (i.e. it's an explicit EVS action). Fallback to the default
+        // behavior if it was an implicit switch (via a KSP hotkey) and the traget mode is not
+        // "free".
+        if (IsFreeCameraPositionMode(oldInfo.cameraMode)
+            && (evsSwitchAction || IsFreeCameraPositionMode(newInfo.cameraMode))) {
+          SetCurrentCameraMode(oldInfo.cameraMode);  // Sync modes to match transformations.
+          StabilizeCamera();
+        }
       }
     }
+    evsSwitchAction = false;
   }
 
   /// <summary>Aligns new camera FOV when switching to a distant vessel.</summary>
@@ -337,7 +359,25 @@ sealed class Controller : MonoBehaviour {
       }
     }
   }
-  
+
+  /// <summary>Sets camera mode if it differs from the requested.</summary>
+  /// <param name="newMode">New camera mode.</param>
+  static void SetCurrentCameraMode(FlightCamera.Modes newMode) {
+    if (FlightCamera.fetch.mode != newMode) {
+      FlightCamera.fetch.setMode(newMode);
+    }
+  }
+
+  /// <summary>Checks if camera position can be preserved in the mode.</summary>
+  /// <param name="mode">Mode to check.</param>
+  /// <returns><c>true</c> if mode allows perserving asme camera position.</returns>
+  static bool IsFreeCameraPositionMode(FlightCamera.Modes mode) {
+    return mode == FlightCamera.Modes.AUTO  // It never chooses LOCKED.
+           || mode == FlightCamera.Modes.FREE
+           || mode == FlightCamera.Modes.ORBITAL
+           || mode == FlightCamera.Modes.CHASE;
+  }
+
   /// <summary>A coroutine to temporarily highlight a vessel.</summary>
   /// <param name="vessel">A vessel to highlight.</param>
   /// <param name="timeout">A duration to keep vessel highlighet.</param>
