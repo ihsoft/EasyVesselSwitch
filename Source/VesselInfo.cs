@@ -15,12 +15,15 @@ struct VesselInfo {
   public Vector3 cameraPos;
   /// <summary>Camera focus position before vessel change.</summary>
   public Vector3 cameraPivotPos;
+  /// <summary>Camera mode. It will be <c>AUTO</c> by default.</summary>
+  public FlightCamera.Modes cameraMode;
 
   /// <summary>Captures vessel info.</summary>  
   public VesselInfo(Vessel vessel) {
     anchorPos = vessel.transform.position;
     cameraPos = Vector3.zero;
     cameraPivotPos = Vector3.zero;
+    cameraMode = FlightCamera.Modes.AUTO;
   }
   
   /// <summary>Captures vessel and camera info.</summary>  
@@ -28,12 +31,14 @@ struct VesselInfo {
     anchorPos = vessel.transform.position;
     cameraPos = camera.GetCameraTransform().position;
     cameraPivotPos = camera.GetPivot().position;
+    cameraMode = camera.mode;
   }
 
   /// <summary>Updates camera info from the rpovided instance.</summary>  
   public void UpdateCameraFrom(FlightCamera camera) {
     cameraPos = camera.GetCameraTransform().position;
     cameraPivotPos = camera.GetPivot().position;
+    cameraMode = camera.mode;
   }
 }
 
