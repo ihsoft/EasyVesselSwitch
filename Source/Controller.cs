@@ -69,7 +69,7 @@ sealed class Controller : MonoBehaviour {
     /// <summary>Keep camera at the same position and move focus to the new vessel.</summary>
     KeepPosition = 1,
     /// <summary>Keep the same camera distance and rotation as was on the old vessel.</summary>
-    KeepDistanceAndRotation = 2
+    KeepDistanceAndRotation = 2,
   }
 
   /// <summary>Vessel which is currently hovered.</summary>
@@ -183,8 +183,8 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>Aligns new camera FOV when switching to a distant vessel.</summary>
-  /// <remarks>When usual stabilization modes are not feasible position new camera so what that the
-  /// old vessel is in the field of view as well as the new vessel.</remarks>
+  /// <remarks>If usual stabilization modes are not feasible then position new camera so what that
+  /// old and new vessels are on the same line of view.</remarks>
   void AlignCamera() {
     var oldCameraDistance = Vector3.Distance(oldInfo.cameraPos, oldInfo.cameraPivotPos);
     var fromOldToNewDir = oldInfo.cameraPivotPos - newInfo.cameraPivotPos;
