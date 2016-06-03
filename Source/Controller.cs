@@ -324,6 +324,12 @@ sealed class Controller : MonoBehaviour {
       }
       sb.Add(VesselMassMsg.Format(hoveredVessel.GetTotalMass()));
       sb.Add(hoveredVessel.IsControllable ? VesselIsControllableMsg : VesselIsNotControllableMsg);
+      var isGroundAttached = IsAttachedToGround(hoveredVessel.rootPart);
+      if (isGroundAttached.HasValue) {
+        sb.Add(isGroundAttached.Value
+            ? vesselIsAttachedToTheGroundMsg
+            : vesselIsNotAttachedToTheGroundMsg);
+      }
       foreach (var res in hoveredVessel.GetActiveResources()) {
         sb.Add(VesselResourceMsg.Format(res.info.name, res.amount / res.maxAmount));
       }
@@ -333,6 +339,21 @@ sealed class Controller : MonoBehaviour {
     vesselInfoOverlay.ShowAtCursor();
   }
 
+  /// <summary>Verifies if KIS part is attached to the ground.</summary>
+  /// <param name="part">Part to check.</param>
+  /// <returns><c>null</c> if it's not a KIS part. Otherwise, either <c>true</c> or <c>false</c>.
+  /// </returns>
+  static bool? IsAttachedToGround(Part part) {
+    var kisItemModule = part.GetComponent("ModuleKISItem");
+    if (kisItemModule != null) {
+      var staticAttachedField = kisItemModule.GetType().GetField("staticAttached");
+      if (staticAttachedField != null) {
+        return staticAttachedField.GetValue(kisItemModule).Equals(true);
+      }
+    }
+    return null;
+  }
+  
   /// <summary>Highlights entire vessel with the specified color.</summary>
   /// <param name="vessel">A vessel to highlight.</param>
   /// <param name="color">A color to use for highlighting. If set to <c>null</c> then vessel
