@@ -56,8 +56,8 @@ sealed class Controller : MonoBehaviour {
   Message<string> SinglePartTitleMsg = "Part: {0}";
   Message<string> AssemblyTitleMsg = "Assembly: {0}";
   Message<double> KerbalEvaFuelMsg = "EVA propellant: {0:F3}";
-  Message VesselIsControllable = "Is controllable: YES";
-  Message VesselIsNotControllable = "Is controllable: NO";
+  Message VesselIsControllableMsg = "IS controllable";
+  Message VesselIsNotControllableMsg = "Is NOT controllable";
   Message<CameraStabilization> CameraStabilizationModeChanged = "EVS stabilization: {0}";
   Message<float> DistantVesselTargeted = "Vessel is too distant: {0:N0}m";
   // ===== END of localizable strings
@@ -323,7 +323,7 @@ sealed class Controller : MonoBehaviour {
         sb.Add(VesselTitleMsg.Format(hoveredVessel.vesselType, hoveredVessel.vesselName));
       }
       sb.Add(VesselMassMsg.Format(hoveredVessel.GetTotalMass()));
-      sb.Add(hoveredVessel.IsControllable ? VesselIsControllable : VesselIsNotControllable);
+      sb.Add(hoveredVessel.IsControllable ? VesselIsControllableMsg : VesselIsNotControllableMsg);
       foreach (var res in hoveredVessel.GetActiveResources()) {
         sb.Add(VesselResourceMsg.Format(res.info.name, res.amount / res.maxAmount));
       }
