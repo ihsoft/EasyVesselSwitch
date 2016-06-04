@@ -13,7 +13,7 @@
         { "name": "KIS" },
         { "name": "KAS" }
     ],
-    "license"         : "Public Domain",
+    "license"         : "public-domain",
     "author"          : [ "IgorZ" ],
     "$vref"           : "#/ckan/ksp-avc"
 }
