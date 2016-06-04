@@ -86,6 +86,9 @@ sealed class Controller : MonoBehaviour {
   VesselInfo newInfo;
   /// <summary>Defines if currently selected vessel was a result of EVS mouse click event.</summary>
   bool evsSwitchAction;
+  /// <summary>Specifies if hovered vessel is attached to the ground.</summary>
+  /// <remarks><c>null</c> means no static attachable parts found.</remarks>
+  bool? isKisStaticAttached;
 
   /// <summary>Overridden from MonoBehavior.</summary>
   /// <remarks>Registers listeners, reads configuration and creates global UI objects.</remarks>
@@ -284,9 +287,11 @@ sealed class Controller : MonoBehaviour {
     if (vessel != hoveredVessel) {
       if (hoveredVessel != null) {
         SetVesselHighlight(hoveredVessel, null);
+        isKisStaticAttached = null;
       }
       if (vessel != null) {
         SetVesselHighlight(vessel, targetVesselHighlightColor);
+        isKisStaticAttached = IsAttachedToGround(vessel.rootPart);
       }
       hoveredVessel = vessel;
     }
@@ -328,9 +333,8 @@ sealed class Controller : MonoBehaviour {
       }
       sb.Add(VesselMassMsg.Format(hoveredVessel.GetTotalMass()));
       sb.Add(hoveredVessel.IsControllable ? VesselIsControllableMsg : VesselIsNotControllableMsg);
-      var isGroundAttached = IsAttachedToGround(hoveredVessel.rootPart);
-      if (isGroundAttached.HasValue) {
-        sb.Add(isGroundAttached.Value
+      if (isKisStaticAttached.HasValue) {
+        sb.Add(isKisStaticAttached.Value
             ? vesselIsAttachedToTheGroundMsg
             : vesselIsNotAttachedToTheGroundMsg);
       }
