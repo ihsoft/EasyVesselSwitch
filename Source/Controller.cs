@@ -89,6 +89,9 @@ sealed class Controller : MonoBehaviour {
   /// <summary>Specifies if hovered vessel is attached to the ground.</summary>
   /// <remarks><c>null</c> means no static attachable parts found.</remarks>
   bool? isKisStaticAttached;
+  /// <summary>If hovered vessel is a kerbal then this will be the component.</summary>
+  /// <remarks><c>null</c> means hovered vessel is not a kerbal.</remarks>
+  KerbalEVA kerbalEva;
 
   /// <summary>Overridden from MonoBehavior.</summary>
   /// <remarks>Registers listeners, reads configuration and creates global UI objects.</remarks>
@@ -288,10 +291,12 @@ sealed class Controller : MonoBehaviour {
       if (hoveredVessel != null) {
         SetVesselHighlight(hoveredVessel, null);
         isKisStaticAttached = null;
+        kerbalEva = null;
       }
       if (vessel != null) {
         SetVesselHighlight(vessel, targetVesselHighlightColor);
         isKisStaticAttached = IsAttachedToGround(vessel.rootPart);
+        kerbalEva = vessel.GetComponent<KerbalEVA>();
       }
       hoveredVessel = vessel;
     }
@@ -313,12 +318,11 @@ sealed class Controller : MonoBehaviour {
       sb.Add(DistantVesselTargeted.Format(distanceBetweenVessels));
     }
 
-    if (hoveredVessel.isEVA) {
+    if (kerbalEva != null) {
       var protoCrewMember = hoveredVessel.GetVesselCrew()[0];
       sb.Add(KerbalTitleMsg.Format(hoveredVessel.GetName(),
                                    protoCrewMember.experienceTrait.Title,
                                    protoCrewMember.experienceLevel));
-      var kerbalEva = hoveredVessel.GetComponent<KerbalEVA>();
       sb.Add(KerbalEvaFuelMsg.Format(kerbalEva.Fuel));
     } else {
       if (hoveredVessel.vesselType == VesselType.Unknown) {
