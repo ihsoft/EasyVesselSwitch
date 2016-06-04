@@ -291,6 +291,8 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>Displays brief information about the vessel under mouse cursor.</summary>
+  /// <remarks>It's called every frame so, don't put heavy code here. If focus change needs heavy
+  /// processing do it in <see cref="SetHoveredVessel"/>.</remarks>
   /// <remarks><see cref="hoveredVessel"/> must not be <c>null</c>.</remarks>
   void ShowHoveredVesselInfo() {
     var sb = new List<string>();
