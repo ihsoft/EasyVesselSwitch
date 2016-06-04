@@ -4,9 +4,10 @@
 A mod to make vessel switching more user friendly.
 
 ####Main features
+- Highlights currently selected vessel with a colored border. It helps navigating using keyboard.
 - Allows selecting target vessel with mouse (by default: `Alt`+`Left Mouse`).
 - Prevents random camera orientation on the new vessel:
-  - For close vessels there are two different modes that allow keeping the context. The modes can be
+  - For close vessels there are three different modes that allow keeping the context. The modes can be
     switched from keyboard (`F7` by default).
     - `None`: Use KSP default mode.
     - `KeepPosition`: Preserve old camera position and only rotate camera to keep the newly selected vessel in focus.
