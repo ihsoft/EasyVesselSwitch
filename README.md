@@ -14,3 +14,4 @@ A mod to make vessel switching more user friendly.
   - For vessels that are too far away from each other camera is adjusted so what the new field of
     view has both the new and the old vessels in the focus.
 - Shows brief info on the vessel being hovered when in switch mode (`Alt` is pressed).
+  - Detects KIS items that are attached to the ground and reports it.
