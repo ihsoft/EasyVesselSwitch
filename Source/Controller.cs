@@ -60,6 +60,8 @@ sealed class Controller : MonoBehaviour {
   Message VesselIsNotControllableMsg = "Is NOT controllable";
   Message<CameraStabilization> CameraStabilizationModeChanged = "EVS stabilization: {0}";
   Message<float> DistantVesselTargeted = "Vessel is too distant: {0:N0}m";
+  Message vesselIsAttachedToTheGroundMsg = "IS attached to the ground";
+  Message vesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
   // ===== END of localizable strings
 
   /// <summary>A mode of camera stabilization.</summary>
