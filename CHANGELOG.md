@@ -1,3 +1,6 @@
+### 1.0.2 (June 13th, 2016)
+- [Fix] #2: Docking camera fix mode activates on KIS attach actions.
+
 ### 1.0.1 (June 13th, 2016)
 - [Enhacement] #1: Prevent camera jumping on vessels docking.
 
