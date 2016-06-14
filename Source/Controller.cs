@@ -207,11 +207,13 @@ sealed class Controller : MonoBehaviour {
   /// handling in such case and fix camera in <c>LastUpdate</c>.</para>
   /// </remarks>
   void OnPartCouple(GameEvents.FromToAction<Part, Part> action) {
-    state = SwitchEvent.VesselDocked;
+    // Only do camera fix if either the source or the destination is an active vessel. 
     if (action.from.vessel.isActiveVessel) {
+      state = SwitchEvent.VesselDocked;
       Logger.logInfo("Active vessel docked to a station. Waiting for LateUpdate...");
       oldInfo = new VesselInfo(action.from.vessel, FlightCamera.fetch);
     } else if (action.to.vessel.isActiveVessel) {
+      state = SwitchEvent.VesselDocked;
       Logger.logInfo("Something has docked to the active vessel. Waiting for LateUpdate...");
       oldInfo = new VesselInfo(action.to.vessel, FlightCamera.fetch);
     }
