@@ -74,10 +74,19 @@ sealed class Controller : MonoBehaviour {
     KeepDistanceAndRotation = 2,
   }
 
+  /// <summary>Type of switch event pending.</summary>
+  enum SwitchEvent {
+    /// <summary>No event pending.</summary>
+    Idle,
+    /// <summary>Current vessel has changed due to EVS action or keyboard shortkey.</summary>
+    VesselSwitched,
+    /// <summary>Either active vessel has docked to a station or another vessel has docked to the
+    /// active station.</summary>
+    VesselDocked,
+  }
+
   /// <summary>Vessel which is currently hovered.</summary>
   Vessel hoveredVessel;
-  /// <summary>Tells if camera needs to be adjused.</summary>
-  bool needCameraFix;
   /// <summary>Overaly window to show info about vessel under the mouse cursor.</summary>
   HintOverlay vesselInfoOverlay;
   /// <summary>Old vessel context.</summary>
@@ -86,6 +95,10 @@ sealed class Controller : MonoBehaviour {
   VesselInfo newInfo;
   /// <summary>Defines if currently selected vessel was a result of EVS mouse click event.</summary>
   bool evsSwitchAction;
+  /// <summary>Event to handle in the controller.</summary>
+  /// <remarks>Controller code reacts to anything different from <see cref="SwitchEvent.Idle"/>.
+  /// Once the event is handled it's reset to the default.</remarks>
+  SwitchEvent state = SwitchEvent.Idle;
   /// <summary>Specifies if hovered vessel is attached to the ground.</summary>
   /// <remarks><c>null</c> means no static attachable parts found.</remarks>
   bool? isKisStaticAttached;
@@ -98,6 +111,7 @@ sealed class Controller : MonoBehaviour {
   void Awake() {
     GameEvents.onVesselSwitching.Add(OnVesselSwitch);
     GameEvents.onVesselChange.Add(OnVesselChange);
+    GameEvents.onPartCouple.Add(OnPartCouple);
     ConfigAccessor.ReadFieldsInType(typeof(Controller), null);
     vesselInfoOverlay = new HintOverlay(
         vesselInfoFontSize, vesselInfoHintPadding, vesselInfoTextColor, vesselInfoBackgroundColor);
@@ -107,6 +121,7 @@ sealed class Controller : MonoBehaviour {
   void OnDestroy() {
     GameEvents.onVesselSwitching.Remove(OnVesselSwitch);
     GameEvents.onVesselChange.Remove(OnVesselChange);
+    GameEvents.onPartCouple.Remove(OnPartCouple);
   }
 
   /// <summary>Overridden from MonoBehavior.</summary>
@@ -164,17 +179,57 @@ sealed class Controller : MonoBehaviour {
     }
   }
 
+  /// <summary>Overridden from MonoBehavior.</summary>
+  /// <remarks>Updates camera and vessels highlighting when two vessels docked.
+  /// <para>EVS stabilzation mode is not supported. Camera position is updated via normal KSP
+  /// behavior: keep distance and rotation while slowly moving focus to the new center of mass.
+  /// </para>
+  /// </remarks>
+  void LateUpdate() {
+    if (state == SwitchEvent.VesselDocked) {
+      state = SwitchEvent.Idle;
+      Logger.logInfo("Setting camera pivot to the new CoM.");
+      var camera = FlightCamera.fetch;
+      camera.GetPivot().position = oldInfo.cameraPivotPos;
+      camera.SetCamCoordsFromPosition(oldInfo.cameraPos);
+      camera.GetCameraTransform().position = oldInfo.cameraPos;
+
+      StartCoroutine(TimedHighlightCoroutine(
+          FlightGlobals.ActiveVessel, newVesselHighlightTimeout, targetVesselHighlightColor,
+          isBeingDocked: true));
+    }
+  }
+
+  /// <summary>GameEvents callback.</summary>
+  /// <remarks>Detects vessel docking events.
+  /// <para>Parts coupling is not a strightforward event. Depending on what has docked to what there
+  /// may or may not be a vessel switch event sent. To be on a safe side just disable switch event
+  /// handling in such case and fix camera in <c>LastUpdate</c>.</para>
+  /// </remarks>
+  void OnPartCouple(GameEvents.FromToAction<Part, Part> action) {
+    state = SwitchEvent.VesselDocked;
+    if (action.from.vessel.isActiveVessel) {
+      Logger.logInfo("Active vessel docked to a station. Waiting for LateUpdate...");
+      oldInfo = new VesselInfo(action.from.vessel, FlightCamera.fetch);
+    } else if (action.to.vessel.isActiveVessel) {
+      Logger.logInfo("Something has docked to the active vessel. Waiting for LateUpdate...");
+      oldInfo = new VesselInfo(action.to.vessel, FlightCamera.fetch);
+    }
+  }
+
   /// <summary>GameEvents callback.</summary>
   /// <remarks>Detects vessel switch and remembers old camera settings if switching from the
   /// currently active vessel.</remarks>
   /// <param name="fromVessel">A vessel prior the switch.</param>
   /// <param name="toVessel">A new active vessel.</param>  
   void OnVesselSwitch(Vessel fromVessel, Vessel toVessel) {
-    if (fromVessel != null && fromVessel == FlightGlobals.ActiveVessel
-        && cameraStabilizationMode != CameraStabilization.None) {
-      oldInfo = new VesselInfo(fromVessel, FlightCamera.fetch);
+    if (state == SwitchEvent.Idle && cameraStabilizationMode != CameraStabilization.None
+        && fromVessel != null && fromVessel.isActiveVessel) {
+      state = SwitchEvent.VesselSwitched;
+      Logger.logInfo(
+          "Detected switch from {0} to {1}. Request camera stabilization.", fromVessel, toVessel);
       newInfo = new VesselInfo(toVessel);
-      needCameraFix = true;
+      oldInfo = new VesselInfo(fromVessel, FlightCamera.fetch);
     }
   }
 
@@ -182,38 +237,41 @@ sealed class Controller : MonoBehaviour {
   /// <remarks>Highlights newly selected vessel and handles camera stabilization.</remarks>
   /// <param name="vessel">A new active vessel.</param>
   void OnVesselChange(Vessel vessel) {
-    // Temporarily highlight the new vessel. 
-    StartCoroutine(TimedHighlightCoroutine(
-        vessel, newVesselHighlightTimeout, targetVesselHighlightColor));
+    // Temporarily highlight the new vessel.
+    if (state == SwitchEvent.VesselSwitched || state == SwitchEvent.Idle) {
+      StartCoroutine(TimedHighlightCoroutine(
+          vessel, newVesselHighlightTimeout, targetVesselHighlightColor));
+    }
 
-    // Handle camera stabilization if needed.
+    if (state != SwitchEvent.VesselSwitched) {
+      return;
+    }
+    state = SwitchEvent.Idle;
+
     var camera = FlightCamera.fetch;
     newInfo.UpdateCameraFrom(camera);
-    if (needCameraFix) {
-      needCameraFix = false;
-      // Camera position cannot be transitioned between any modes. Some modes (e.g. LOCKED) don't
-      // allow the camera to be placed at any place. Don't do camera stablization or
-      // aligning for such modes. In the modes that allow free camera position the transformations
-      // can be very different so, just copy source mode into the target vessel.
-      // TODO(IgorZ): Find a way to do the translation between different modes. 
-      if (Vector3.Distance(oldInfo.anchorPos, newInfo.anchorPos) > maxVesselDistance) {
-        // On the distant vessels respect camera modes of the both vessels. If either of them is not
-        // "free" then just fallback to the default behavior (restore latest known position).
-        if (IsFreeCameraPositionMode(oldInfo.cameraMode)
-            && IsFreeCameraPositionMode(newInfo.cameraMode)) {
-          SetCurrentCameraMode(oldInfo.cameraMode);  // Sync modes to match transformations.
-          AlignCamera();
-        }
-      } else {
-        // On close vessels if source mode is "free" then substitute target mode with it. Only do so
-        // when mouse select is used (i.e. it's an explicit EVS action). Fallback to the default
-        // behavior if it was an implicit switch (via a KSP hotkey) and the traget mode is not
-        // "free".
-        if (IsFreeCameraPositionMode(oldInfo.cameraMode)
-            && (evsSwitchAction || IsFreeCameraPositionMode(newInfo.cameraMode))) {
-          SetCurrentCameraMode(oldInfo.cameraMode);  // Sync modes to match transformations.
-          StabilizeCamera();
-        }
+    // Camera position cannot be transitioned between any modes. Some modes (e.g. LOCKED) don't
+    // allow the camera to be placed at any place. Don't do camera stablization or
+    // aligning for such modes. In the modes that allow free camera position the transformations
+    // can be very different so, just copy source mode into the target vessel.
+    // TODO(ihsoft): Find a way to do the translation between different modes.
+    if (Vector3.Distance(oldInfo.anchorPos, newInfo.anchorPos) > maxVesselDistance) {
+      // On the distant vessels respect camera modes of the both vessels. If either of them is not
+      // "free" then just fallback to the default behavior (restore latest known position).
+      if (IsFreeCameraPositionMode(oldInfo.cameraMode)
+          && IsFreeCameraPositionMode(newInfo.cameraMode)) {
+        SetCurrentCameraMode(oldInfo.cameraMode);  // Sync modes to match transformations.
+        AlignCamera();
+      }
+    } else {
+      // On close vessels if source mode is "free" then substitute target mode with it. Only do so
+      // when mouse select is used (i.e. it's an explicit EVS action). Fallback to the default
+      // behavior if it was an implicit switch (via a KSP hotkey) and the traget mode is not
+      // "free".
+      if (IsFreeCameraPositionMode(oldInfo.cameraMode)
+          && (evsSwitchAction || IsFreeCameraPositionMode(newInfo.cameraMode))) {
+        SetCurrentCameraMode(oldInfo.cameraMode);  // Sync modes to match transformations.
+        StabilizeCamera();
       }
     }
     evsSwitchAction = false;
@@ -415,10 +473,24 @@ sealed class Controller : MonoBehaviour {
   /// <param name="vessel">Vessel to highlight.</param>
   /// <param name="timeout">Duration to keep vessel highlighet.</param>
   /// <param name="color">Color to assign to the highlighter.</param>
+  /// <param name = "isBeingDocked">If <c>true</c> then highlighting logic will expect number of
+  /// parts in the vessel to increase. It may put some extra loading on CPU, though.</param>
   /// <returns><c>WaitForSeconds</c>.</returns>
-  static IEnumerator TimedHighlightCoroutine(Vessel vessel, float timeout, Color color) {
+  static IEnumerator TimedHighlightCoroutine(Vessel vessel, float timeout, Color color,
+                                             bool isBeingDocked = false) {
     SetVesselHighlight(vessel, color);
-    yield return new WaitForSeconds(timeout);
+    if (isBeingDocked) {
+      // On dock event completion the set of vessel parts will increase. Though, there is no
+      // reliable way to detect when new parts are redy to accept highlighter changes. So, just set
+      // the highlight on every frame. It will cost some performance but it's not critical here. 
+      var startTime = Time.unscaledTime;
+      while (Time.unscaledTime - startTime < timeout) {
+        yield return null;
+        SetVesselHighlight(vessel, color);
+      }
+    } else {
+      yield return new WaitForSeconds(timeout);
+    }
     SetVesselHighlight(vessel, null);
   }
 
