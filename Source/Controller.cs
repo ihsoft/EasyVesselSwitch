@@ -145,7 +145,7 @@ sealed class Controller : MonoBehaviour {
     if (Mouse.HoveredPart && EventChecker.IsModifierCombinationPressed(switchModifier)) {
       SetHoveredVessel(Mouse.HoveredPart.vessel);
       if (Mouse.GetAllMouseButtonsDown() == switchMouseButton
-          && hoveredVessel != null && hoveredVessel != FlightGlobals.ActiveVessel) {
+          && hoveredVessel != null && !hoveredVessel.isActiveVessel) {
         if (hoveredVessel.DiscoveryInfo.Level != DiscoveryLevels.Owned) {
           // Cannot switch to unowned vessel. Invoke standard "soft" switch to have error message
           // triggered.
@@ -308,7 +308,7 @@ sealed class Controller : MonoBehaviour {
   /// <remarks><see cref="hoveredVessel"/> must not be <c>null</c>.</remarks>
   void ShowHoveredVesselInfo() {
     var sb = new List<string>();
-    sb.Add(hoveredVessel == FlightGlobals.ActiveVessel ? CurrentVesselMsg : SwitchToMsg);
+    sb.Add(hoveredVessel.isActiveVessel ? CurrentVesselMsg : SwitchToMsg);
     sb.Add("");
 
     // Give a hint when distance is too long.
