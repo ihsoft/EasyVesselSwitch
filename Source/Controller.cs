@@ -179,7 +179,7 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>GameEvents callback.</summary>
-  /// <remarks>Highlights newly selected vessel and handles camear stabilization.</remarks>
+  /// <remarks>Highlights newly selected vessel and handles camera stabilization.</remarks>
   /// <param name="vessel">A new active vessel.</param>
   void OnVesselChange(Vessel vessel) {
     // Temporarily highlight the new vessel. 
