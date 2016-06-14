@@ -403,7 +403,7 @@ sealed class Controller : MonoBehaviour {
 
   /// <summary>Checks if camera position can be preserved in the mode.</summary>
   /// <param name="mode">Mode to check.</param>
-  /// <returns><c>true</c> if mode allows perserving asme camera position.</returns>
+  /// <returns><c>true</c> if mode allows perserving the same camera position.</returns>
   static bool IsFreeCameraPositionMode(FlightCamera.Modes mode) {
     return mode == FlightCamera.Modes.AUTO  // It never chooses LOCKED.
            || mode == FlightCamera.Modes.FREE
@@ -412,9 +412,9 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>A coroutine to temporarily highlight a vessel.</summary>
-  /// <param name="vessel">A vessel to highlight.</param>
-  /// <param name="timeout">A duration to keep vessel highlighet.</param>
-  /// <param name="color">A color to assign to the highlighter.</param>
+  /// <param name="vessel">Vessel to highlight.</param>
+  /// <param name="timeout">Duration to keep vessel highlighet.</param>
+  /// <param name="color">Color to assign to the highlighter.</param>
   /// <returns><c>WaitForSeconds</c>.</returns>
   static IEnumerator TimedHighlightCoroutine(Vessel vessel, float timeout, Color color) {
     SetVesselHighlight(vessel, color);
