@@ -155,8 +155,8 @@ sealed class Controller : MonoBehaviour {
           // ladder" or "in atmosphere").
           var vesselToSelect = hoveredVessel;  // Save hovered vessel as it'll be reset on blur. 
           SetHoveredVessel(null);
-          FlightGlobals.ForceSetActiveVessel(vesselToSelect);
           evsSwitchAction = true;
+          FlightGlobals.ForceSetActiveVessel(vesselToSelect);
         }
       }
     } else if (hoveredVessel != null) {
