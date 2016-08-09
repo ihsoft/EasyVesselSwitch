@@ -17,7 +17,7 @@ namespace EasyVesselSwitch {
 [KSPAddon(KSPAddon.Startup.Flight, false /*once*/)]
 [PersistentFieldsFile("EasyVesselSwitch/Plugins/PluginData/settings.cfg", "")]
 sealed class Controller : MonoBehaviour {
-  // ===== BEGIN of persistent fields section.
+  #region Persistent fields
   [PersistentField("UI/switchModifier")]
   static KeyModifiers switchModifier = KeyModifiers.AnyAlt;
   [PersistentField("UI/switchMouseButton")]
@@ -44,9 +44,9 @@ sealed class Controller : MonoBehaviour {
   static Color vesselInfoTextColor = Color.white;
   [PersistentField("VesselInfo/hintPadding")]
   static int vesselInfoHintPadding = 3;
-  // ===== END of persistent fields section.
+  #endregion
 
-  // ===== BEGIN of localizable strings
+  #region Localizable strings
   Message SwitchToMsg = "Switch to:";
   Message CurrentVesselMsg = "Currently selected:";
   Message<VesselType, string> VesselTitleMsg = "{0}: {1}";
@@ -62,7 +62,7 @@ sealed class Controller : MonoBehaviour {
   Message<float> DistantVesselTargeted = "Vessel is too distant: {0:N0}m";
   Message vesselIsAttachedToTheGroundMsg = "IS attached to the ground";
   Message vesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
-  // ===== END of localizable strings
+  #endregion
 
   /// <summary>A mode of camera stabilization.</summary>
   enum CameraStabilization {
