@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription ("Easy Vessel Switch for Kerbal Space Program by IgorZ")]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("IH Soft")]
-[assembly: AssemblyProduct ("EasyVesselSwitch for KSP 1.1")]
+[assembly: AssemblyProduct ("EasyVesselSwitch for KSP 1.1.3")]
 [assembly: AssemblyCopyright ("Public Domain")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
@@ -24,8 +24,8 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can use the default the Revision and 
 // Build Numbers by using the '*' as shown below:
-[assembly: AssemblyVersion ("1.0.2")]
-[assembly: AssemblyInformationalVersion ("1.0.2 for KSP v1.1")]
+[assembly: AssemblyVersion ("1.0.3")]
+[assembly: AssemblyInformationalVersion ("1.0.3 for KSP v1.1.3")]
 [assembly: Guid ("52fd90de-a2a6-4642-8fc4-50f8d938319c")]
 [assembly: KSPAssembly ("EasyVesselSwitch", 1, 0)]
 [assembly: AssemblyFlags (AssemblyNameFlags.PublicKey | AssemblyNameFlags.EnableJITcompileOptimizer)]
