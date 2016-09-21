@@ -135,8 +135,11 @@ sealed class Controller : MonoBehaviour {
   /// <summary>Overridden from MonoBehavior.</summary>
   /// <remarks>Tracks keys and mouse moveement.</remarks>
   void Update() {
-    // Cancel any selection if game is paused or time warped. Block UI as well. 
-    if (Mathf.Approximately(Time.timeScale, 0f) || Time.timeScale > 1f) {
+    // Cancel any selection if game is paused or time warped. Also check if vessel swicthing or UI
+    // in general are locked, this is a sign that some other plugin is being actively interacting
+    // with input. Cancel all EVS activities if it's the case.
+    if (Mathf.Approximately(Time.timeScale, 0f) || Time.timeScale > 1f
+        || InputLockManager.IsLocked(ControlTypes.UI | ControlTypes.VESSEL_SWITCHING)) {
       if (hoveredVessel != null) {
         SetHoveredVessel(null);
       }
