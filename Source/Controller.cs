@@ -466,9 +466,9 @@ sealed class Controller : MonoBehaviour {
   /// <returns><c>true</c> if mode allows perserving the same camera position.</returns>
   static bool IsFreeCameraPositionMode(FlightCamera.Modes mode) {
     return mode == FlightCamera.Modes.AUTO  // It never chooses LOCKED.
-           || mode == FlightCamera.Modes.FREE
-           || mode == FlightCamera.Modes.ORBITAL
-           || mode == FlightCamera.Modes.CHASE;
+        || mode == FlightCamera.Modes.FREE
+        || mode == FlightCamera.Modes.ORBITAL
+        || mode == FlightCamera.Modes.CHASE;
   }
 
   /// <summary>A coroutine to temporarily highlight a vessel.</summary>
