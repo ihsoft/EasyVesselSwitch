@@ -404,9 +404,11 @@ sealed class Controller : MonoBehaviour {
             ? vesselIsAttachedToTheGroundMsg
             : vesselIsNotAttachedToTheGroundMsg);
       }
-      foreach (var res in hoveredVessel.GetActiveResources()) {
-        sb.Add(VesselResourceMsg.Format(res.info.name, res.amount / res.maxAmount));
-      }
+      //FIXME
+      //foreach (var res in hoveredVessel.resourcePartSet. GetActiveResources()) {
+//      foreach (var res in hoveredVessel.resourcePartSet) {
+//        sb.Add(VesselResourceMsg.Format(res.info.name, res.amount / res.maxAmount));
+//      }
     }
 
     vesselInfoOverlay.text = string.Join("\n", sb.ToArray());
