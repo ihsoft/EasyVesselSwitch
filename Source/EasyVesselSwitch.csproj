@@ -61,10 +61,6 @@
       <HintPath>..\Binaries\KSPDev_Utils.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KSPUtil">
-      <HintPath>Q:\KSP_Data\Managed\KSPUtil.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System">
       <HintPath>Q:\KSP_Data\Managed\System.dll</HintPath>
       <Private>False</Private>

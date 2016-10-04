@@ -2,10 +2,9 @@
 // Author: igor.zavoychinskiy@gmail.com
 // This software is distributed under Public domain license.
 
-using HighlightingSystem;
+using Highlighting;
 using KSPDev.ConfigUtils;
 using KSPDev.GUIUtils;
-using KSPDev.LogUtils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -191,7 +190,7 @@ sealed class Controller : MonoBehaviour {
   void LateUpdate() {
     if (state == SwitchEvent.VesselDocked) {
       state = SwitchEvent.Idle;
-      Logger.logInfo("Setting camera pivot to the new CoM.");
+      Debug.Log("Setting camera pivot to the new CoM.");
       var camera = FlightCamera.fetch;
       camera.GetPivot().position = oldInfo.cameraPivotPos;
       camera.SetCamCoordsFromPosition(oldInfo.cameraPos);
@@ -213,11 +212,11 @@ sealed class Controller : MonoBehaviour {
     // Only do camera fix if either the source or the destination is an active vessel. 
     if (action.from.vessel.isActiveVessel) {
       state = SwitchEvent.VesselDocked;
-      Logger.logInfo("Active vessel docked to a station. Waiting for LateUpdate...");
+      Debug.Log("Active vessel docked to a station. Waiting for LateUpdate...");
       oldInfo = new VesselInfo(action.from.vessel, FlightCamera.fetch);
     } else if (action.to.vessel.isActiveVessel) {
       state = SwitchEvent.VesselDocked;
-      Logger.logInfo("Something has docked to the active vessel. Waiting for LateUpdate...");
+      Debug.Log("Something has docked to the active vessel. Waiting for LateUpdate...");
       oldInfo = new VesselInfo(action.to.vessel, FlightCamera.fetch);
     }
   }
@@ -231,7 +230,7 @@ sealed class Controller : MonoBehaviour {
     if (state == SwitchEvent.Idle && cameraStabilizationMode != CameraStabilization.None
         && fromVessel != null && fromVessel.isActiveVessel) {
       state = SwitchEvent.VesselSwitched;
-      Logger.logInfo(
+      Debug.LogFormat(
           "Detected switch from {0} to {1}. Request camera stabilization.", fromVessel, toVessel);
       newInfo = new VesselInfo(toVessel);
       oldInfo = new VesselInfo(fromVessel, FlightCamera.fetch);
@@ -321,7 +320,7 @@ sealed class Controller : MonoBehaviour {
       // Restore old pivot and camera position to have original rotations applied to the camera.
       // Then, either animate the pivot or set it instantly. KSP code will move the camera
       // following the pivot without changing its rotation or distance.
-      Logger.logInfo("Fix camera position while keeping distance and orientation");
+      Debug.Log("Fix camera position while keeping distance and orientation");
       camera.GetPivot().position = oldInfo.cameraPivotPos;
       camera.SetCamCoordsFromPosition(oldInfo.cameraPos);
       if (cameraStabilizationAnimationDuration < float.Epsilon) {
@@ -336,7 +335,7 @@ sealed class Controller : MonoBehaviour {
       // camera on the pivot. When animation is disabled then just setting the position is enough
       // since the pivot is set to the new vessel. When animation is enabled we animate the pivot
       // and reset the camera position to have only direction recalculated.
-      Logger.logInfo("Fix camera focus while keeping its position");
+      Debug.Log("Fix camera focus while keeping its position");
       if (cameraStabilizationAnimationDuration < float.Epsilon) {
         camera.SetCamCoordsFromPosition(oldInfo.cameraPos);
         camera.GetCameraTransform().position = oldInfo.cameraPos;
