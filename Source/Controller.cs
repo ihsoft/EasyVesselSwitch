@@ -104,6 +104,9 @@ sealed class Controller : MonoBehaviour {
   /// <summary>If hovered vessel is a kerbal then this will be the component.</summary>
   /// <remarks><c>null</c> means hovered vessel is not a kerbal.</remarks>
   KerbalEVA kerbalEva;
+  /// <summary>Part that is currently hovered when EVS mode is enabled.</summary>
+  /// <remarks>Used to determine part's focus change.</remarks>
+  Part lastHoveredPart;
 
   /// <summary>Overridden from MonoBehavior.</summary>
   /// <remarks>Registers listeners, reads configuration and creates global UI objects.</remarks>
@@ -158,7 +161,7 @@ sealed class Controller : MonoBehaviour {
           CameraStabilizationModeChanged.Format(cameraStabilizationMode));
     }
 
-    // Handle the switch.
+    // Handle vessel switch and highlight.
     if (Mouse.HoveredPart && EventChecker.IsModifierCombinationPressed(switchModifier)) {
       SetHoveredVessel(Mouse.HoveredPart.vessel);
       if (Mouse.GetAllMouseButtonsDown() == switchMouseButton
@@ -178,6 +181,19 @@ sealed class Controller : MonoBehaviour {
       }
     } else if (hoveredVessel != null) {
       SetHoveredVessel(null);  // Cancel highlight.
+    }
+
+    // Core KSP logic highlights hovered parts. Once focus is lost so does the highlight state on
+    // the part. Here we detect changing focus in scope of the current vessel, and restore EVS
+    // highlighting when mouse focus moves out.
+    if (hoveredVessel == null) {
+      lastHoveredPart = null;
+    } else if (lastHoveredPart != Mouse.HoveredPart) {
+      if (lastHoveredPart != null && lastHoveredPart.vessel == hoveredVessel) {
+        // Let game core to disable highlighter.
+        StartCoroutine(WaitAndRestoreHighlight(lastHoveredPart));
+      }
+      lastHoveredPart = Mouse.HoveredPart;
     }
   }
 
@@ -435,24 +451,14 @@ sealed class Controller : MonoBehaviour {
   /// <param name="color">A color to use for highlighting. If set to <c>null</c> then vessel
   /// highlighting will be cancelled.</param>
   static void SetVesselHighlight(Vessel vessel, Color? color) {
-    if (vessel.isEVA) {
-      // Kerbal "parts" are not usual parts. In spite of there is a highlighter on the model it
-      // doesn't work for some reason. A highlighter added on the part's game object does the trick.
-      var highlighter = vessel.rootPart.gameObject.GetComponent<Highlighter>()
-          ?? vessel.rootPart.gameObject.AddComponent<Highlighter>();
-      if (color.HasValue) {
-        highlighter.ConstantOn(targetVesselHighlightColor);
-      } else {
-        highlighter.ConstantOff();
+    foreach (var part in vessel.parts) {
+      if (part == Mouse.HoveredPart) {
+        continue;  // KSP core highlights hovered part with own color. 
       }
-    } else {
-      // Each regular part has a hgighlighter, just use it.
-      foreach (var part in vessel.parts) {
-        if (color.HasValue) {
-          part.highlighter.ConstantOn(targetVesselHighlightColor);
-        } else {
-          part.highlighter.ConstantOff();
-        }
+      if (color.HasValue) {
+        part.highlighter.ConstantOn(color.Value);
+      } else {
+        part.highlighter.ConstantOff();
       }
     }
   }
@@ -552,6 +558,13 @@ sealed class Controller : MonoBehaviour {
           movementOffset + Vector3.Lerp(oldInfo.cameraPivotPos, newInfo.cameraPivotPos, progress);
       yield return null;
     } while (progress < 1.0f && FlightCamera.fetch.Target == target);
+  }
+
+  /// <summary>Restores EVS highlight on the part that lost focus.</summary>
+  /// <param name="part">Part to restore highlight on</param>
+  static IEnumerator WaitAndRestoreHighlight(Part part) {
+    yield return new WaitForEndOfFrame();
+    part.highlighter.ConstantOn(targetVesselHighlightColor);
   }
 }
 
