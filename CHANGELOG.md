@@ -1,3 +1,6 @@
+### 1.1.1 (October 12th, 2016)
+- [Enhancement] KSP 1.2 support
+
 ### 1.0.3 (September 20th, 2016)
 - [Enhancement] Don't act if UI or vessel switch input is locked.
 
