@@ -108,7 +108,7 @@ sealed class Controller : MonoBehaviour {
   /// <remarks>Used to determine part's focus change.</remarks>
   Part lastHoveredPart;
 
-  /// <summary>Overridden from MonoBehavior.</summary>
+  /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Registers listeners, reads configuration and creates global UI objects.</remarks>
   void Awake() {
     GameEvents.onVesselSwitching.Add(OnVesselSwitch);
@@ -119,14 +119,14 @@ sealed class Controller : MonoBehaviour {
         vesselInfoFontSize, vesselInfoHintPadding, vesselInfoTextColor, vesselInfoBackgroundColor);
   }
 
-  /// <summary>Overridden from MonoBehavior.</summary>
+  /// <summary>Overridden from MonoBehaviour.</summary>
   void OnDestroy() {
     GameEvents.onVesselSwitching.Remove(OnVesselSwitch);
     GameEvents.onVesselChange.Remove(OnVesselChange);
     GameEvents.onPartCouple.Remove(OnPartCouple);
   }
 
-  /// <summary>Overridden from MonoBehavior.</summary>
+  /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Persents hovered vessel info.</remarks>
   void OnGUI() {
     if (hoveredVessel != null) {
@@ -134,7 +134,7 @@ sealed class Controller : MonoBehaviour {
     }
   }
 
-  /// <summary>Overridden from MonoBehavior.</summary>
+  /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Tracks keys and mouse moveement.</remarks>
   void Update() {
     // Cancel any selection if game is paused or time warped. Also check if vessel swicthing or UI
@@ -197,7 +197,7 @@ sealed class Controller : MonoBehaviour {
     }
   }
 
-  /// <summary>Overridden from MonoBehavior.</summary>
+  /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Updates camera and vessels highlighting when two vessels docked.
   /// <para>EVS stabilzation mode is not supported. Camera position is updated via normal KSP
   /// behavior: keep distance and rotation while slowly moving focus to the new center of mass.
