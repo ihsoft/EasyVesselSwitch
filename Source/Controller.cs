@@ -46,21 +46,21 @@ sealed class Controller : MonoBehaviour {
   #endregion
 
   #region Localizable strings
-  Message SwitchToMsg = "Switch to:";
-  Message CurrentVesselMsg = "Currently selected:";
-  Message<VesselType, string> VesselTitleMsg = "{0}: {1}";
-  Message<string, string, int> KerbalTitleMsg = "{0} ({1}-{2})";
-  Message<float> VesselMassMsg = "Total mass {0:0.###}t";
-  Message<string, double> VesselResourceMsg = "{0}: {1:P0}";
-  Message<string> SinglePartTitleMsg = "Part: {0}";
-  Message<string> AssemblyTitleMsg = "Assembly: {0}";
-  Message<double> KerbalEvaFuelMsg = "EVA propellant: {0:F3}";
-  Message VesselIsControllableMsg = "IS controllable";
-  Message VesselIsNotControllableMsg = "Is NOT controllable";
-  Message<CameraStabilization> CameraStabilizationModeChanged = "EVS stabilization: {0}";
-  Message<float> DistantVesselTargeted = "Vessel is too distant: {0:N0}m";
-  Message vesselIsAttachedToTheGroundMsg = "IS attached to the ground";
-  Message vesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
+  readonly Message SwitchToMsg = "Switch to:";
+  readonly Message CurrentVesselMsg = "Currently selected:";
+  readonly Message<VesselType, string> VesselTitleMsg = "{0}: {1}";
+  readonly Message<string, string, int> KerbalTitleMsg = "{0} ({1}-{2})";
+  readonly Message<float> VesselMassMsg = "Total mass {0:0.###}t";
+  readonly Message<string, double> VesselResourceMsg = "{0}: {1:P0}";
+  readonly Message<string> SinglePartTitleMsg = "Part: {0}";
+  readonly Message<string> AssemblyTitleMsg = "Assembly: {0}";
+  readonly Message<double> KerbalEvaFuelMsg = "EVA propellant: {0:F3}";
+  readonly Message VesselIsControllableMsg = "IS controllable";
+  readonly Message VesselIsNotControllableMsg = "Is NOT controllable";
+  readonly Message<CameraStabilization> CameraStabilizationModeChanged = "EVS stabilization: {0}";
+  readonly Message<float> DistantVesselTargeted = "Vessel is too distant: {0:N0}m";
+  readonly Message VesselIsAttachedToTheGroundMsg = "IS attached to the ground";
+  readonly Message VesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
   #endregion
 
   /// <summary>A mode of camera stabilization.</summary>
