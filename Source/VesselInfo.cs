@@ -7,7 +7,8 @@ using UnityEngine;
 
 namespace EasyVesselSwitch {
 
-/// <summary>Vessel &amp; camera context used when switching.</summary>
+/// <summary>Holds metadata about vessel &amp; camera context used when switching.</summary>
+/// <remarks>It must be struct since copy-by-value behavior will be needed.</remarks>
 struct VesselInfo {
   /// <summary>Position of the new vessel at the moment of switch.</summary>
   public Vector3 anchorPos;
@@ -34,7 +35,7 @@ struct VesselInfo {
     cameraMode = camera.mode;
   }
 
-  /// <summary>Updates camera info from the rpovided instance.</summary>  
+  /// <summary>Updates camera info from the provided instance.</summary>  
   public void UpdateCameraFrom(FlightCamera camera) {
     cameraPos = camera.GetCameraTransform().position;
     cameraPivotPos = camera.GetPivot().position;
