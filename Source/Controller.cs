@@ -95,8 +95,10 @@ sealed class Controller : MonoBehaviour {
   /// <summary>Defines if currently selected vessel was a result of EVS mouse click event.</summary>
   bool evsSwitchAction;
   /// <summary>Event to handle in the controller.</summary>
-  /// <remarks>Controller code reacts to anything different from <see cref="SwitchEvent.Idle"/>.
-  /// Once the event is handled it's reset to the default.</remarks>
+  /// <remarks>
+  /// Controller code reacts to anything different from <see cref="SwitchEvent.Idle"/>. Once the
+  /// event is handled it's reset to the default.
+  /// </remarks>
   SwitchEvent state = SwitchEvent.Idle;
   /// <summary>Specifies if hovered vessel is attached to the ground.</summary>
   /// <remarks><c>null</c> means no static attachable parts found.</remarks>
@@ -198,9 +200,11 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>
-  /// <remarks>Updates camera and vessels highlighting when two vessels docked.
-  /// <para>EVS stabilzation mode is not supported. Camera position is updated via normal KSP
-  /// behavior: keep distance and rotation while slowly moving focus to the new center of mass.
+  /// <remarks>
+  /// Updates camera and vessels highlighting when two vessels docked.
+  /// <para>
+  /// EVS stabilzation mode is not supported. Camera position is updated via normal KSP behavior:
+  /// keep distance and rotation while slowly moving focus to the new center of mass.
   /// </para>
   /// </remarks>
   void LateUpdate() {
@@ -219,10 +223,13 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>GameEvents callback.</summary>
-  /// <remarks>Detects vessel docking events.
-  /// <para>Parts coupling is not a strightforward event. Depending on what has docked to what there
-  /// may or may not be a vessel switch event sent. To be on a safe side just disable switch event
-  /// handling in such case and fix camera in <c>LastUpdate</c>.</para>
+  /// <remarks>
+  /// Detects vessel docking events.
+  /// <para>
+  /// Parts coupling is not a strightforward event. Depending on what has docked to what there may
+  /// or may not be a vessel switch event sent. To be on a safe side just disable switch event
+  /// handling in such case and fix camera in <c>LastUpdate</c>.
+  /// </para>
   /// </remarks>
   void OnPartCouple(GameEvents.FromToAction<Part, Part> action) {
     // Only do camera fix if either the source or the destination is an active vessel. 
@@ -238,8 +245,10 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>GameEvents callback.</summary>
-  /// <remarks>Detects vessel switch and remembers old camera settings if switching from the
-  /// currently active vessel.</remarks>
+  /// <remarks>
+  /// Detects vessel switch and remembers old camera settings if switching from the currently active
+  /// vessel.
+  /// </remarks>
   /// <param name="fromVessel">A vessel prior the switch.</param>
   /// <param name="toVessel">A new active vessel.</param>  
   void OnVesselSwitch(Vessel fromVessel, Vessel toVessel) {
@@ -298,8 +307,10 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>Aligns new camera FOV when switching to a distant vessel.</summary>
-  /// <remarks>If usual stabilization modes are not feasible then position new camera so what that
-  /// old and new vessels are on the same line of view.</remarks>
+  /// <remarks>
+  /// If usual stabilization modes are not feasible then position new camera so what that old and
+  /// new vessels are on the same line of view.
+  /// </remarks>
   void AlignCamera() {
     var oldCameraDistance = Vector3.Distance(oldInfo.cameraPos, oldInfo.cameraPivotPos);
     var fromOldToNewDir = oldInfo.cameraPivotPos - newInfo.cameraPivotPos;
@@ -327,8 +338,10 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>Prevents random jumping of the new vessel's camera.</summary>
-  /// <remarks>Depending on the mode either preserves old camera position and changes focus of view
-  /// to the new vessel or keeps vessel-to-camera rotation.</remarks>
+  /// <remarks>
+  /// Depending on the mode either preserves old camera position and changes focus of view to the
+  /// new vessel or keeps vessel-to-camera rotation.
+  /// </remarks>
   void StabilizeCamera() {
     var camera = FlightCamera.fetch;
 
@@ -381,9 +394,11 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>Displays brief information about the vessel under mouse cursor.</summary>
-  /// <remarks>It's called every frame so, don't put heavy code here. If focus change needs heavy
-  /// processing do it in <see cref="SetHoveredVessel"/>.</remarks>
-  /// <remarks><see cref="hoveredVessel"/> must not be <c>null</c>.</remarks>
+  /// <remarks>
+  /// It's called every frame so, don't put heavy code here. If focus change needs heavy processing
+  /// do it in <see cref="SetHoveredVessel"/>.
+  /// <para><see cref="hoveredVessel"/> must not be <c>null</c>.</para>
+  /// </remarks>
   void ShowHoveredVesselInfo() {
     var sb = new List<string>();
     sb.Add(hoveredVessel.isActiveVessel ? CurrentVesselMsg : SwitchToMsg);
@@ -417,8 +432,8 @@ sealed class Controller : MonoBehaviour {
       sb.Add(hoveredVessel.IsControllable ? VesselIsControllableMsg : VesselIsNotControllableMsg);
       if (isKisStaticAttached.HasValue) {
         sb.Add(isKisStaticAttached.Value
-            ? vesselIsAttachedToTheGroundMsg
-            : vesselIsNotAttachedToTheGroundMsg);
+            ? VesselIsAttachedToTheGroundMsg
+            : VesselIsNotAttachedToTheGroundMsg);
       }
     }
 
@@ -428,7 +443,8 @@ sealed class Controller : MonoBehaviour {
 
   /// <summary>Verifies if KIS part is attached to the ground.</summary>
   /// <param name="part">Part to check.</param>
-  /// <returns><c>null</c> if it's not a KIS part. Otherwise, either <c>true</c> or <c>false</c>.
+  /// <returns>
+  /// <c>null</c> if it's not a KIS part. Otherwise, either <c>true</c> or <c>false</c>.
   /// </returns>
   static bool? IsAttachedToGround(Part part) {
     var kisItemModule = part.GetComponent("ModuleKISItem");
@@ -443,8 +459,10 @@ sealed class Controller : MonoBehaviour {
   
   /// <summary>Highlights entire vessel with the specified color.</summary>
   /// <param name="vessel">A vessel to highlight.</param>
-  /// <param name="color">A color to use for highlighting. If set to <c>null</c> then vessel
-  /// highlighting will be cancelled.</param>
+  /// <param name="color">
+  /// A color to use for highlighting. If set to <c>null</c> then vessel highlighting will be
+  /// cancelled.
+  /// </param>
   static void SetVesselHighlight(Vessel vessel, Color? color) {
     foreach (var part in vessel.parts) {
       if (part == Mouse.HoveredPart) {
