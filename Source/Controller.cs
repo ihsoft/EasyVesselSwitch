@@ -193,8 +193,10 @@ sealed class Controller : MonoBehaviour {
       lastHoveredPart = null;
     } else if (lastHoveredPart != Mouse.HoveredPart) {
       if (lastHoveredPart != null && lastHoveredPart.vessel == hoveredVessel) {
-        // Let game core to disable highlighter.
-        StartCoroutine(WaitAndRestoreHighlight(lastHoveredPart));
+        // Let game core to disable highlighter and then restore it.
+        var restoreHighlightPart = lastHoveredPart; // Make a cope for the delayed call.
+        AsyncCall.CallOnEndOfFrame(
+            this, x => restoreHighlightPart.highlighter.ConstantOn(targetVesselHighlightColor));
       }
       lastHoveredPart = Mouse.HoveredPart;
     }
@@ -581,13 +583,6 @@ sealed class Controller : MonoBehaviour {
           movementOffset + Vector3.Lerp(oldInfo.cameraPivotPos, newInfo.cameraPivotPos, progress);
       yield return null;
     } while (progress < 1.0f && FlightCamera.fetch.Target == target);
-  }
-
-  /// <summary>Restores EVS highlight on the part that lost focus.</summary>
-  /// <param name="part">Part to restore highlight on</param>
-  static IEnumerator WaitAndRestoreHighlight(Part part) {
-    yield return new WaitForEndOfFrame();
-    part.highlighter.ConstantOn(targetVesselHighlightColor);
   }
 }
 
