@@ -41,6 +41,12 @@ struct VesselInfo {
     cameraPivotPos = camera.GetPivot().position;
     cameraMode = camera.mode;
   }
+
+  /// <summary>Gets vessel info for the current camera and vessel.</summary>
+  /// <returns>Vessel info.</returns>
+  public static VesselInfo CaptureCurrentState() {
+    return new VesselInfo(FlightGlobals.ActiveVessel, FlightCamera.fetch);
+  }
 }
 
 }  // namespace
