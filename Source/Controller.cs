@@ -57,8 +57,9 @@ sealed class Controller : MonoBehaviour {
   readonly Message<double> KerbalEvaFuelMsg = "EVA propellant: {0:F3}";
   readonly Message VesselIsControllableMsg = "IS controllable";
   readonly Message VesselIsNotControllableMsg = "Is NOT controllable";
-  readonly Message<CameraStabilization> CameraStabilizationModeChanged = "EVS stabilization: {0}";
-  readonly Message<float> DistantVesselTargeted = "Vessel is too distant: {0:N0}m";
+  readonly Message<CameraStabilization> CameraStabilizationModeChangedMsg =
+      "EVS stabilization: {0}";
+  readonly Message<float> DistantVesselTargetedMsg = "Vessel is too distant: {0:N0}m";
   readonly Message VesselIsAttachedToTheGroundMsg = "IS attached to the ground";
   readonly Message VesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
   #endregion
@@ -160,7 +161,7 @@ sealed class Controller : MonoBehaviour {
         cameraStabilizationMode = CameraStabilization.None;
       }
       ScreenMessaging.ShowPriorityScreenMessage(
-          CameraStabilizationModeChanged.Format(cameraStabilizationMode));
+          CameraStabilizationModeChangedMsg.Format(cameraStabilizationMode));
     }
 
     // Handle vessel switch and highlight.
@@ -408,7 +409,7 @@ sealed class Controller : MonoBehaviour {
     float distanceBetweenVessels = Vector3.Distance(
         FlightGlobals.ActiveVessel.transform.position, hoveredVessel.transform.position);
     if (distanceBetweenVessels > maxVesselDistance) {
-      sb.Add(DistantVesselTargeted.Format(distanceBetweenVessels));
+      sb.Add(DistantVesselTargetedMsg.Format(distanceBetweenVessels));
     }
 
     if (kerbalEva != null) {
