@@ -87,7 +87,7 @@ sealed class Controller : MonoBehaviour {
   /// <summary>Vessel which is currently hovered.</summary>
   Vessel hoveredVessel;
   /// <summary>Overaly window to show info about vessel under the mouse cursor.</summary>
-  HintOverlay vesselInfoOverlay;
+  HintOverlay mouseInfoOverlay;
   /// <summary>Old vessel context.</summary>
   VesselInfo oldInfo;
   /// <summary>New vessel context.</summary>
@@ -117,7 +117,7 @@ sealed class Controller : MonoBehaviour {
     GameEvents.onVesselChange.Add(OnVesselChange);
     GameEvents.onPartCouple.Add(OnPartCouple);
     ConfigAccessor.ReadFieldsInType(typeof(Controller), null);
-    vesselInfoOverlay = new HintOverlay(
+    mouseInfoOverlay = new HintOverlay(
         vesselInfoFontSize, vesselInfoHintPadding, vesselInfoTextColor, vesselInfoBackgroundColor);
   }
 
@@ -437,8 +437,8 @@ sealed class Controller : MonoBehaviour {
       }
     }
 
-    vesselInfoOverlay.text = string.Join("\n", sb.ToArray());
-    vesselInfoOverlay.ShowAtCursor();
+    mouseInfoOverlay.text = string.Join("\n", sb.ToArray());
+    mouseInfoOverlay.ShowAtCursor();
   }
 
   /// <summary>Verifies if KIS part is attached to the ground.</summary>
