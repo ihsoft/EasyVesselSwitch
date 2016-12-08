@@ -418,16 +418,7 @@ sealed class Controller : MonoBehaviour {
                                    protoCrewMember.experienceLevel));
       sb.Add(KerbalEvaFuelMsg.Format(kerbalEva.Fuel));
     } else {
-      if (hoveredVessel.vesselType == VesselType.Unknown) {
-        // Unknown vessels are likely dropped parts or assemblies.
-        if (hoveredVessel.parts.Count == 1) {
-          sb.Add(SinglePartTitleMsg.Format(hoveredVessel.vesselName));
-        } else {
-          sb.Add(AssemblyTitleMsg.Format(hoveredVessel.vesselName));
-        }
-      } else {
-        sb.Add(VesselTitleMsg.Format(hoveredVessel.vesselType, hoveredVessel.vesselName));
-      }
+      sb.Add(GetShortVesselTitle(hoveredVessel));
       sb.Add(VesselMassMsg.Format(hoveredVessel.GetTotalMass()));
       sb.Add(hoveredVessel.IsControllable ? VesselIsControllableMsg : VesselIsNotControllableMsg);
       if (isKisStaticAttached.HasValue) {
@@ -439,6 +430,20 @@ sealed class Controller : MonoBehaviour {
 
     mouseInfoOverlay.text = string.Join("\n", sb.ToArray());
     mouseInfoOverlay.ShowAtCursor();
+  }
+
+  /// <summary>Shortcut to get a short vessel title.</summary>
+  /// <remarks>It considers and reports vessel's type.</remarks>
+  /// <param name="vessel">Vessel to get title for.</param>
+  /// <returns>A short string that fits one line.</returns>
+  string GetShortVesselTitle(Vessel vessel) {
+    if (vessel.vesselType == VesselType.Unknown) {
+      // Unknown vessels are likely dropped parts or assemblies.
+      return vessel.parts.Count == 1
+          ? SinglePartTitleMsg.Format(vessel.vesselName)
+          : AssemblyTitleMsg.Format(vessel.vesselName);
+    }
+    return VesselTitleMsg.Format(vessel.vesselType, vessel.vesselName);
   }
 
   /// <summary>Verifies if KIS part is attached to the ground.</summary>
