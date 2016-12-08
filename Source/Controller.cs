@@ -503,8 +503,10 @@ sealed class Controller : MonoBehaviour {
   /// <param name="vessel">Vessel to highlight.</param>
   /// <param name="timeout">Duration to keep vessel highlighet.</param>
   /// <param name="color">Color to assign to the highlighter.</param>
-  /// <param name = "isBeingDocked">If <c>true</c> then highlighting logic will expect number of
-  /// parts in the vessel to increase. It may put some extra loading on CPU, though.</param>
+  /// <param name = "isBeingDocked">
+  /// If <c>true</c> then highlighting logic will expect number of parts in the vessel to increase.
+  /// It may put some extra loading on CPU, though.
+  /// </param>
   /// <returns><c>WaitForSeconds</c>.</returns>
   static IEnumerator TimedHighlightCoroutine(Vessel vessel, float timeout, Color color,
                                              bool isBeingDocked = false) {
@@ -525,8 +527,9 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>Preserves fixed position of camera, and moves its focus to the new vessel.</summary>
-  /// <remarks>The vessel may move while the animation is done (e.g. on the orbit). To compensate
-  /// this movement all camera calculations are done relative to the original vessel position at the
+  /// <remarks>
+  /// The vessel may move while the animation is done (e.g. on the orbit). To compensate this
+  /// movement all camera calculations are done relative to the original vessel position at the
   /// time of the switch. And then a difference is added given the current vessel position.
   /// </remarks>
   /// <param name="target">A camera target. If it's changed the animation will abort.</param>
@@ -554,8 +557,9 @@ sealed class Controller : MonoBehaviour {
   /// <summary>
   /// Preserves camera-to-target rotation and distance, and moves camera's focus to the new vessel. 
   /// </summary>
-  /// <remarks>The vessel may move while the animation is done (e.g. on the orbit). To compensate
-  /// this movement all camera calculations are done relative to the original vessel position at the
+  /// <remarks>
+  /// The vessel may move while the animation is done (e.g. on the orbit). To compensate this
+  /// movement all camera calculations are done relative to the original vessel position at the
   /// time of the switch. And then a difference is added given the current vessel position.
   /// </remarks>
   /// <param name="target">A camera target. If it's changed the animation will abort.</param>
