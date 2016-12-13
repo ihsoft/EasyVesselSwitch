@@ -46,22 +46,22 @@ sealed class Controller : MonoBehaviour {
   #endregion
 
   #region Localizable strings
-  readonly Message SwitchToMsg = "Switch to:";
-  readonly Message CurrentVesselMsg = "Currently selected:";
-  readonly Message<VesselType, string> VesselTitleMsg = "{0}: {1}";
-  readonly Message<string, string, int> KerbalTitleMsg = "{0} ({1}-{2})";
-  readonly Message<float> VesselMassMsg = "Total mass {0:0.###}t";
-  readonly Message<string, double> VesselResourceMsg = "{0}: {1:P0}";
-  readonly Message<string> SinglePartTitleMsg = "Part: {0}";
-  readonly Message<string> AssemblyTitleMsg = "Assembly: {0}";
-  readonly Message<double> KerbalEvaFuelMsg = "EVA propellant: {0:F3}";
-  readonly Message VesselIsControllableMsg = "IS controllable";
-  readonly Message VesselIsNotControllableMsg = "Is NOT controllable";
-  readonly Message<CameraStabilization> CameraStabilizationModeChangedMsg =
+  static readonly Message SwitchToMsg = "Switch to:";
+  static readonly Message CurrentVesselMsg = "Currently selected:";
+  static readonly Message<VesselType, string> VesselTitleMsg = "{0}: {1}";
+  static readonly Message<string, string, int> KerbalTitleMsg = "{0} ({1}-{2})";
+  static readonly Message<float> VesselMassMsg = "Total mass {0:0.###}t";
+  static readonly Message<string, double> VesselResourceMsg = "{0}: {1:P0}";
+  static readonly Message<string> SinglePartTitleMsg = "Part: {0}";
+  static readonly Message<string> AssemblyTitleMsg = "Assembly: {0}";
+  static readonly Message<double> KerbalEvaFuelMsg = "EVA propellant: {0:F3}";
+  static readonly Message VesselIsControllableMsg = "IS controllable";
+  static readonly Message VesselIsNotControllableMsg = "Is NOT controllable";
+  static readonly Message<CameraStabilization> CameraStabilizationModeChangedMsg =
       "EVS stabilization: {0}";
-  readonly Message<float> DistantVesselTargetedMsg = "Vessel is too distant: {0:N0}m";
-  readonly Message VesselIsAttachedToTheGroundMsg = "IS attached to the ground";
-  readonly Message VesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
+  static readonly Message<float> DistantVesselTargetedMsg = "Vessel is too distant: {0:N0}m";
+  static readonly Message VesselIsAttachedToTheGroundMsg = "IS attached to the ground";
+  static readonly Message VesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
   #endregion
 
   /// <summary>A mode of camera stabilization.</summary>
