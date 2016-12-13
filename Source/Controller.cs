@@ -539,7 +539,7 @@ sealed class Controller : MonoBehaviour {
   /// <param name="oldInfo">Previous vessel info.</param>
   /// <param name="newInfo">New vessel info.</param>
   /// <returns><c>null</c> until animation is done or aborted.</returns>
-  static IEnumerator AnimateCameraPivotCoroutine(
+  IEnumerator AnimateCameraPivotCoroutine(
       Transform target, VesselInfo oldInfo, VesselInfo newInfo) {
     float startTime = Time.unscaledTime;
     float progress;
@@ -569,7 +569,7 @@ sealed class Controller : MonoBehaviour {
   /// <param name="oldInfo">Previous vessel info.</param>
   /// <param name="newInfo">New vessel info.</param>
   /// <returns></returns>
-  static IEnumerator AnimateCameraPositionCoroutine(
+  IEnumerator AnimateCameraPositionCoroutine(
       Transform target, VesselInfo oldInfo, VesselInfo newInfo) {
     float startTime = Time.unscaledTime;
     float progress;
