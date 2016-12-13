@@ -20,29 +20,29 @@ sealed class Controller : MonoBehaviour {
   [PersistentField("UI/switchModifier")]
   static KeyModifiers switchModifier = KeyModifiers.AnyAlt;
   [PersistentField("UI/switchMouseButton")]
-  static Mouse.Buttons switchMouseButton = Mouse.Buttons.Left;
+  Mouse.Buttons switchMouseButton = Mouse.Buttons.Left;
   [PersistentField("UI/targetVesselHighlightColor")]
-  static Color targetVesselHighlightColor = Color.yellow;
+  Color targetVesselHighlightColor = Color.yellow;
   [PersistentField("UI/newVesselHighlightTimeout")]
-  static float newVesselHighlightTimeout = 0.5f;
+  float newVesselHighlightTimeout = 0.5f;
 
   [PersistentField("CameraStabilization/animationDuration")]
-  static float cameraStabilizationAnimationDuration = 1f;
+  float cameraStabilizationAnimationDuration = 1f;
   [PersistentField("CameraStabilization/mode")]
-  static CameraStabilization cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
+  CameraStabilization cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
   [PersistentField("CameraStabilization/maxVesselDistance")]
-  static int maxVesselDistance = 100;  // Meters.
+  int maxVesselDistance = 100;  // Meters.
   [PersistentField("CameraStabilization/switchModeKey")]
-  static KeyCode switchStabilizationModeKey = KeyCode.F7;
+  KeyCode switchStabilizationModeKey = KeyCode.F7;
 
   [PersistentField("VesselInfo/fontSize")]
-  static int vesselInfoFontSize = 10;
+  int vesselInfoFontSize = 10;
   [PersistentField("VesselInfo/backgroundColor")]
-  static Color vesselInfoBackgroundColor = new Color(0.0f, 0.0f, 0.0f, 0.5f);
+  Color vesselInfoBackgroundColor = new Color(0.0f, 0.0f, 0.0f, 0.5f);
   [PersistentField("VesselInfo/textColor")]
-  static Color vesselInfoTextColor = Color.white;
+  Color vesselInfoTextColor = Color.white;
   [PersistentField("VesselInfo/hintPadding")]
-  static int vesselInfoHintPadding = 3;
+  int vesselInfoHintPadding = 3;
   #endregion
 
   #region Localizable strings
@@ -117,7 +117,7 @@ sealed class Controller : MonoBehaviour {
     GameEvents.onVesselSwitching.Add(OnVesselSwitch);
     GameEvents.onVesselChange.Add(OnVesselChange);
     GameEvents.onPartCouple.Add(OnPartCouple);
-    ConfigAccessor.ReadFieldsInType(typeof(Controller), null);
+    ConfigAccessor.ReadFieldsInType(typeof(Controller), this);
     mouseInfoOverlay = new HintOverlay(
         vesselInfoFontSize, vesselInfoHintPadding, vesselInfoTextColor, vesselInfoBackgroundColor);
   }
