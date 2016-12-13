@@ -19,28 +19,60 @@ sealed class Controller : MonoBehaviour {
   #region Persistent fields
   [PersistentField("UI/switchModifier")]
   static KeyModifiers switchModifier = KeyModifiers.AnyAlt;
+
+  /// <summary>Mouse button to trigger part/vessel select.</summary>
   [PersistentField("UI/switchMouseButton")]
   Mouse.Buttons switchMouseButton = Mouse.Buttons.Left;
+
+  /// <summary>Highlight color for the vessel in vessel select mode.</summary>
   [PersistentField("UI/targetVesselHighlightColor")]
   Color targetVesselHighlightColor = Color.yellow;
+
+  /// <summary>Fade out tmeout for the current vessel selection.</summary>
   [PersistentField("UI/newVesselHighlightTimeout")]
   float newVesselHighlightTimeout = 0.5f;
 
+  /// <summary>Animation duration for transitioning camera to the new position/rotation.</summary>
   [PersistentField("CameraStabilization/animationDuration")]
   float cameraStabilizationAnimationDuration = 1f;
+
+  /// <summary>Default mode of camera stabilization. It's not persisted when changed.</summary>
   [PersistentField("CameraStabilization/mode")]
   CameraStabilization cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
+
+  /// <summary>
+  /// Maximum distance to use normal camera stabilization. For greater distances camera is simply
+  /// positioned on the vector that connects new target and the old target so what both targets are
+  /// in the focus.
+  /// </summary>
   [PersistentField("CameraStabilization/maxVesselDistance")]
   int maxVesselDistance = 100;  // Meters.
+
+  /// <summary>Key which swicthes camera stabilization modes.</summary>
   [PersistentField("CameraStabilization/switchModeKey")]
   KeyCode switchStabilizationModeKey = KeyCode.F7;
 
+  /// <summary>
+  /// Size of the font in the overlay that displays info on the hovered vessel/part.
+  /// </summary>
   [PersistentField("VesselInfo/fontSize")]
   int vesselInfoFontSize = 10;
+
+  /// <summary>
+  /// Background color of the overlay that displays info on the hovered vessel/part.
+  /// </summary>
   [PersistentField("VesselInfo/backgroundColor")]
   Color vesselInfoBackgroundColor = new Color(0.0f, 0.0f, 0.0f, 0.5f);
+
+  /// <summary>
+  /// Foreground color of the text in overlay that displays info on the hovered vessel/part.
+  /// </summary>
   [PersistentField("VesselInfo/textColor")]
   Color vesselInfoTextColor = Color.white;
+
+  /// <summary>
+  /// Padding between text and the border in overlay that displays info on the hovered vessel/part.
+  /// </summary>
   [PersistentField("VesselInfo/hintPadding")]
   int vesselInfoHintPadding = 3;
   #endregion
