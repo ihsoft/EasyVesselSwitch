@@ -59,7 +59,7 @@
     </Reference>
     <Reference Include="KSPDev_Utils">
       <HintPath>..\Binaries\KSPDev_Utils.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System">
       <HintPath>Q:\KSP_Data\Managed\System.dll</HintPath>
