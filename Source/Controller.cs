@@ -21,6 +21,10 @@ sealed class Controller : MonoBehaviour {
   /// <summary>Key to activate vessel select mode.</summary>
   [PersistentField("UI/vesselSwitchKey")]
   KeyboardInputSwitch vesselSwitchKey = new KeyboardInputSwitch(KeyCode.LeftAlt);
+  
+  /// <summary>Key to activate focused part select mode.</summary>
+  [PersistentField("UI/partFocusSwitchKey")]
+  KeyboardInputSwitch partFocusSwitchKey = new KeyboardInputSwitch(KeyCode.O);
 
   /// <summary>Mouse button to trigger part/vessel select.</summary>
   [PersistentField("UI/switchMouseButton")]
@@ -96,6 +100,16 @@ sealed class Controller : MonoBehaviour {
   static readonly Message<float> DistantVesselTargetedMsg = "Vessel is too distant: {0:N0}m";
   static readonly Message VesselIsAttachedToTheGroundMsg = "IS attached to the ground";
   static readonly Message VesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
+
+  static readonly Message CurrenPartInFocusStatusMsg = "This part is currently in focus.";
+  static readonly Message NotCurrentVesselPartStatusMsg = "This is NOT a current vessel's part!";
+  static readonly Message<Mouse.Buttons> SetFocustToCurrentPartHintMsg =
+      new Message<Mouse.Buttons>("Click {0} mouse button to set focus on this part.");
+  static readonly Message<Mouse.Buttons> ResetFocusToCurrentVesselHintMsg =
+      new Message<Mouse.Buttons>("Click {0} mouse button to reset focus to the current vessel.");
+  static readonly Message AnotherPartFocusHintMsg = "Hover over another part to change the focus.";
+  static readonly Message SomePartFocusHintMsg = "Hover over a part to set focus on it.";
+  static readonly Message ResetFocusHintMsg = "Point to the outer space to reset focus.";
   #endregion
 
   /// <summary>A mode of camera stabilization.</summary>
@@ -176,6 +190,9 @@ sealed class Controller : MonoBehaviour {
     if (hoveredVessel != null) {
       ShowHoveredVesselInfo();
     }
+    if (partFocusSwitchKey.isHold) {
+      ShowHoveredPartInfo();
+    }
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>
@@ -196,6 +213,9 @@ sealed class Controller : MonoBehaviour {
 
     if (vesselSwitchKey.Update()) {
       HandleVesselSelection();
+    }
+    if (partFocusSwitchKey.Update()) {
+      HanleCameraFocusSelection();
     }
 
     // Core KSP logic highlights hovered parts. Once focus is lost so does the highlight state on
@@ -348,6 +368,23 @@ sealed class Controller : MonoBehaviour {
     }
   }
 
+  /// <summary>Handles camera focus selection logic.</summary>
+  void HanleCameraFocusSelection() {
+    if (Mouse.GetAllMouseButtonsDown() == switchMouseButton) {
+      if (Mouse.HoveredPart != null) {
+        oldInfo = VesselInfo.CaptureCurrentState();
+        FlightCamera.fetch.SetTargetPart(Mouse.HoveredPart);
+        newInfo = VesselInfo.CaptureCurrentState();
+        StabilizeCamera();
+      } else {
+        oldInfo = VesselInfo.CaptureCurrentState();
+        FlightCamera.fetch.TargetActiveVessel();
+        newInfo = VesselInfo.CaptureCurrentState();
+        StabilizeCamera();
+      }
+    }
+  }
+  
   /// <summary>Aligns new camera FOV when switching to a distant vessel.</summary>
   /// <remarks>
   /// If usual stabilization modes are not feasible then position new camera so what that old and
@@ -436,6 +473,37 @@ sealed class Controller : MonoBehaviour {
       }
       hoveredVessel = vessel;
     }
+  }
+
+  /// <summary>Displays info and hint when in camera focus mode.</summary>
+  /// <remarks>It's called every frame so, don't put heavy code here.</remarks>
+  void ShowHoveredPartInfo() {
+    var sb = new List<string>();
+    var camera = FlightCamera.fetch;
+    var trgPart = Mouse.HoveredPart;
+    if (trgPart != null) {
+      if (camera.partTarget == trgPart) {
+        sb.Add(CurrenPartInFocusStatusMsg);
+        sb.Add(AnotherPartFocusHintMsg);
+      } else {
+        sb.Add(SetFocustToCurrentPartHintMsg.Format(switchMouseButton));
+      }
+      if (camera.targetMode == FlightCamera.TargetMode.Part) {
+        sb.Add(ResetFocusHintMsg);
+      }
+      if (trgPart.vessel != FlightGlobals.ActiveVessel) {
+        sb.Add("");
+        sb.Add(NotCurrentVesselPartStatusMsg);
+      }
+    } else {
+      if (camera.targetMode == FlightCamera.TargetMode.Part) {
+        sb.Add(ResetFocusToCurrentVesselHintMsg.Format(switchMouseButton));
+      } else {
+        sb.Add(SomePartFocusHintMsg);
+      }
+    }
+    mouseInfoOverlay.text = string.Join("\n", sb.ToArray());
+    mouseInfoOverlay.ShowAtCursor();
   }
 
   /// <summary>Displays brief information about the vessel under mouse cursor.</summary>
