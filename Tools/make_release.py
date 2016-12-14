@@ -70,7 +70,7 @@ STRUCTURE = collections.OrderedDict({
   ],
   '/GameData/EasyVesselSwitch/Plugins' : [
     '/Source/bin/Release/EasyVesselSwitch.dll',
-    '/Binaries/KSPDev_Utils.0.18.0.dll',
+    '/Binaries/KSPDev_Utils.0.19.0.dll',
     '/Binaries/KSPDev_Utils_License.md',
     '/Binaries/MiniAVC.dll',
     '/EasyVesselSwitch.version',
