@@ -371,15 +371,24 @@ sealed class Controller : MonoBehaviour {
 
   /// <summary>Handles camera focus selection logic.</summary>
   void HanleCameraFocusSelection() {
-    if (Mouse.GetAllMouseButtonsDown() == switchMouseButton) {
-      if (Mouse.HoveredPart != null) {
+    var camera = FlightCamera.fetch;
+    var targetPart = Mouse.HoveredPart;
+    var targetTransform = targetPart != null ? targetPart.transform : null;
+    if (Mouse.GetAllMouseButtonsDown() == switchMouseButton && targetTransform != camera.Target) {
+      if (targetPart != null) {
         oldInfo = VesselInfo.CaptureCurrentState();
-        FlightCamera.fetch.SetTargetPart(Mouse.HoveredPart);
+        if (targetPart.vessel == FlightGlobals.ActiveVessel
+            && targetPart.vessel.parts.Count == 1) {
+          // When moving focus back to a single part vessel reset to the vessel mode.
+          camera.TargetActiveVessel();
+        } else {
+          camera.SetTargetPart(Mouse.HoveredPart);
+        }
         newInfo = VesselInfo.CaptureCurrentState();
         StabilizeCamera();
       } else {
         oldInfo = VesselInfo.CaptureCurrentState();
-        FlightCamera.fetch.TargetActiveVessel();
+        camera.TargetActiveVessel();
         newInfo = VesselInfo.CaptureCurrentState();
         StabilizeCamera();
       }
@@ -483,7 +492,7 @@ sealed class Controller : MonoBehaviour {
     var camera = FlightCamera.fetch;
     var trgPart = Mouse.HoveredPart;
     if (trgPart != null) {
-      if (camera.partTarget == trgPart) {
+      if (camera.Target == trgPart.transform) {
         sb.Add(CurrenPartInFocusStatusMsg);
         sb.Add(AnotherPartFocusHintMsg);
       } else {
