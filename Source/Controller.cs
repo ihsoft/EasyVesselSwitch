@@ -4,6 +4,7 @@
 
 using KSPDev.ConfigUtils;
 using KSPDev.GUIUtils;
+using KSPDev.InputUtils;
 using KSPDev.ProcessingUtils;
 using System;
 using System.Collections;
@@ -17,8 +18,9 @@ namespace EasyVesselSwitch {
 [PersistentFieldsFile("EasyVesselSwitch/Plugins/PluginData/settings.cfg", "")]
 sealed class Controller : MonoBehaviour {
   #region Persistent fields
-  [PersistentField("UI/switchModifier")]
-  static KeyModifiers switchModifier = KeyModifiers.AnyAlt;
+  /// <summary>Key to activate vessel select mode.</summary>
+  [PersistentField("UI/vesselSwitchKey")]
+  KeyboardInputSwitch vesselSwitchKey = new KeyboardInputSwitch(KeyCode.LeftAlt);
 
   /// <summary>Mouse button to trigger part/vessel select.</summary>
   [PersistentField("UI/switchMouseButton")]
@@ -152,6 +154,13 @@ sealed class Controller : MonoBehaviour {
     ConfigAccessor.ReadFieldsInType(typeof(Controller), this);
     mouseInfoOverlay = new HintOverlay(
         infoOverlayFontSize, infoOverlayHintPadding, infoOverlayTextColor, infoOverlayBackgroundColor);
+
+    // Drop vessel selection when main modifier is released.
+    vesselSwitchKey.OnStateChanged += (x => {
+      if (!vesselSwitchKey.isHold) {
+        SetHoveredVessel(null);
+      }
+    });
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>
@@ -172,17 +181,6 @@ sealed class Controller : MonoBehaviour {
   /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Tracks keys and mouse moveement.</remarks>
   void Update() {
-    // Cancel any selection if game is paused or time warped. Also check if vessel swicthing or UI
-    // in general are locked, this is a sign that some other plugin is being actively interacting
-    // with input. Cancel all EVS activities if it's the case.
-    if (Mathf.Approximately(Time.timeScale, 0f) || Time.timeScale > 1f
-        || InputLockManager.IsLocked(ControlTypes.UI | ControlTypes.VESSEL_SWITCHING)) {
-      if (hoveredVessel != null) {
-        SetHoveredVessel(null);
-      }
-      return;
-    }
-
     // Handle stabilization mode switch. 
     if (Input.GetKeyDown(switchStabilizationModeKey)) {
       if (cameraStabilizationMode == CameraStabilization.None) {
@@ -196,26 +194,8 @@ sealed class Controller : MonoBehaviour {
           CameraStabilizationModeChangedMsg.Format(cameraStabilizationMode));
     }
 
-    // Handle vessel switch and highlight.
-    if (Mouse.HoveredPart && EventChecker.IsModifierCombinationPressed(switchModifier)) {
-      SetHoveredVessel(Mouse.HoveredPart.vessel);
-      if (Mouse.GetAllMouseButtonsDown() == switchMouseButton
-          && hoveredVessel != null && !hoveredVessel.isActiveVessel) {
-        if (hoveredVessel.DiscoveryInfo.Level != DiscoveryLevels.Owned) {
-          // Cannot switch to unowned vessel. Invoke standard "soft" switch to have error message
-          // triggered.
-          FlightGlobals.SetActiveVessel(hoveredVessel);
-        } else {
-          // Use forced version since "soft" switch blocks on many normal situations (e.g. "on
-          // ladder" or "in atmosphere").
-          var vesselToSelect = hoveredVessel;  // Save hovered vessel as it'll be reset on blur. 
-          SetHoveredVessel(null);
-          evsSwitchAction = true;
-          FlightGlobals.ForceSetActiveVessel(vesselToSelect);
-        }
-      }
-    } else if (hoveredVessel != null) {
-      SetHoveredVessel(null);  // Cancel highlight.
+    if (vesselSwitchKey.Update()) {
+      HandleVesselSelection();
     }
 
     // Core KSP logic highlights hovered parts. Once focus is lost so does the highlight state on
@@ -339,6 +319,33 @@ sealed class Controller : MonoBehaviour {
       }
     }
     evsSwitchAction = false;
+  }
+
+  /// <summary>Handles vessel selection logic.</summary>
+  void HandleVesselSelection() {
+    // Highlight focused vessel.
+    if (Mouse.HoveredPart) {
+      SetHoveredVessel(Mouse.HoveredPart.vessel);
+    } else {
+      SetHoveredVessel(null);  // Cancel highlight.
+    }
+
+    // Select vessel if clicked.
+    if (Mouse.GetAllMouseButtonsDown() == switchMouseButton
+        && hoveredVessel != null && !hoveredVessel.isActiveVessel) {
+      if (hoveredVessel.DiscoveryInfo.Level != DiscoveryLevels.Owned) {
+        // Cannot switch to unowned vessel. Invoke standard "soft" switch to have error message
+        // triggered.
+        FlightGlobals.SetActiveVessel(hoveredVessel);
+      } else {
+        // Use forced version since "soft" switch blocks on many normal situations (e.g. "on
+        // ladder" or "in atmosphere").
+        var vesselToSelect = hoveredVessel;  // Save hovered vessel as it'll be reset on blur. 
+        SetHoveredVessel(null);
+        evsSwitchAction = true;
+        FlightGlobals.ForceSetActiveVessel(vesselToSelect);
+      }
+    }
   }
 
   /// <summary>Aligns new camera FOV when switching to a distant vessel.</summary>
