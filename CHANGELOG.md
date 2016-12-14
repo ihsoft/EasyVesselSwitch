@@ -1,3 +1,7 @@
+### 1.2.0 (December 13th, 2016)
+- [Enhancement #3] Allow more modifier keys assigned.
+- [Enhancement #6] Allow setting focus on a specific part. By deafult it's key `O`.
+
 ### 1.1.1 (October 12th, 2016)
 - [Enhancement] KSP 1.2 support
 
