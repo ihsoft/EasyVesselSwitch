@@ -171,11 +171,7 @@ sealed class Controller : MonoBehaviour {
         infoOverlayFontSize, infoOverlayHintPadding, infoOverlayTextColor, infoOverlayBackgroundColor);
 
     // Drop vessel selection when main modifier is released.
-    vesselSwitchKey.OnStateChanged += (x => {
-      if (!vesselSwitchKey.isHold) {
-        SetHoveredVessel(null);
-      }
-    });
+    vesselSwitchKey.OnRelease += delegate{ SetHoveredVessel(null); };
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>

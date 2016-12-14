@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>KSPDev_Utils.0.18.0</name>
+        <name>KSPDev_Utils.0.19.0</name>
     </assembly>
     <members>
         <member name="T:KSPDev.ConfigUtils.AbstractCollectionTypeProto">
@@ -1820,27 +1820,27 @@
             
                void Awake() {
                  mySwitch.OnStateChanged += OnSwitchStateChange;
-                 // Also add a debug handler via simple lambda...
-                 mySwitch.OnStateChanged += x => Debug.Log("State changed!");
-                 // ...and add one more lambda...
-                 mySwitch.OnStateChanged += x => {
-                   if (x) {
-                     Debug.Log("Key is released");
-                   } else {
-                     Debug.Log("Key is pressed");
-                   }
+                 mySwitch.OnPress += delegate{
+                   Debug.Log("Key pressed");
+                 };
+                 mySwitch.OnRelease += delegate{
+                   Debug.Log("Key is released");
+                 };
+                 mySwitch.OnClick += delegate{
+                   Debug.Log("Key click registered");
                  };
                }
             
                void OnDestroy() {
-                 // Do nothing since switch is an instance field, and it will be
-                 // destroyed together with all the listeners.
-                 // Though, if it was static we would do something like this:
+                 // Do nothing since in this example switch is an instance field, and it will be destroyed
+                 // together with the owning class (and, hence, all the listeners).
+                 // Though, if it was a static field we would do something like this:
                  mySwitch.OnStateChanged -= OnSwitchStateChange;
+                 // Anonymous functions cannot be unregistered, so don't use them on static fields.
                }
             
-               void OnSwitchStateChange(bool oldState) {
-                 Debug.LogFormat("Switch state changed: {0}=>{1}", oldState, mySwitch.isHold);
+               void OnSwitchStateChange() {
+                 Debug.LogFormat("Switch state changed to: {0}", mySwitch.isHold);
                }
             
                void Update() {
@@ -1878,6 +1878,11 @@
              <seealso cref="T:KSPDev.ConfigUtils.PersistentFieldAttribute"/>
              <seealso href="https://kerbalspaceprogram.com/api/class_k_s_p_field.html">KSP: KSPField</seealso>
         </member>
+        <member name="F:KSPDev.InputUtils.KeyboardInputSwitch.ClickDelay">
+            <summary>Maximum delay to register click event.</summary>
+            <remarks>Value used is the same as in KSP <see cref="T:KeyBinding"/>.</remarks>
+            <seealso href="https://kerbalspaceprogram.com/api/class_key_binding.html">KSP: KeyBinding</seealso>
+        </member>
         <member name="F:KSPDev.InputUtils.KeyboardInputSwitch.keyCode">
             <summary>Key code for the switch.</summary>
             <remarks>
@@ -1892,6 +1897,9 @@
             Note that if switch is disabled while the key was hold the hold state will <i>not</i> be
             reset. If state needs to be reset then caller must do it explicitly.
             </remarks>
+        </member>
+        <member name="F:KSPDev.InputUtils.KeyboardInputSwitch.lastPressTime">
+            <summary>Last press event timestamp.</summary>
         </member>
         <member name="M:KSPDev.InputUtils.KeyboardInputSwitch.Load(ConfigNode)">
             <summary>
@@ -1955,14 +1963,42 @@
         </member>
         <member name="E:KSPDev.InputUtils.KeyboardInputSwitch.OnStateChanged">
             <summary>
-            Events that notify about hold state change. Callback's argument is the <i>old</i> value of the
-            state.
+            Event that notifies about hold state change. The event is only called when state has actually
+            changed.
             </summary>
             <remarks>
             Remember to remove listeners when their owner class is destroyed by the game. If it's not done
             no NRE will happen but "ghost" listeners will continue to react on the events.  
             </remarks>
-            <remarks>The callback is only called when state has actually changed.</remarks>
+        </member>
+        <member name="E:KSPDev.InputUtils.KeyboardInputSwitch.OnPress">
+            <summary>
+            Event that notifies that switch key has been pressed.
+            </summary>
+            <remarks>
+            Remember to remove listeners when their owner class is destroyed by the game. If it's not done
+            no NRE will happen but "ghost" listeners will continue to react on the events.  
+            </remarks>
+        </member>
+        <member name="E:KSPDev.InputUtils.KeyboardInputSwitch.OnRelease">
+            <summary>
+            Event that notifies that switch key has been released.
+            </summary>
+            <remarks>
+            Remember to remove listeners when their owner class is destroyed by the game. If it's not done
+            no NRE will happen but "ghost" listeners will continue to react on the events.  
+            </remarks>
+        </member>
+        <member name="E:KSPDev.InputUtils.KeyboardInputSwitch.OnClick">
+            <summary>
+            Event that notifies about "click" event. Click event requires press and release actions
+            separted by a maximum delay.
+            </summary>
+            <remarks>
+            Remember to remove listeners when their owner class is destroyed by the game. If it's not done
+            no NRE will happen but "ghost" listeners will continue to react on the events.  
+            </remarks>
+            <seealso cref="F:KSPDev.InputUtils.KeyboardInputSwitch.ClickDelay"/>
         </member>
         <member name="T:KSPDev.KSPInterfaces.IJointEventsListener">
             <summary>Declares callbacks that are called when a joint between two parts is changed.</summary>
