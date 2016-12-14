@@ -55,26 +55,26 @@ sealed class Controller : MonoBehaviour {
   /// <summary>
   /// Size of the font in the overlay that displays info on the hovered vessel/part.
   /// </summary>
-  [PersistentField("VesselInfo/fontSize")]
-  int vesselInfoFontSize = 10;
+  [PersistentField("InfoOverlay/fontSize")]
+  int infoOverlayFontSize = 10;
 
   /// <summary>
   /// Background color of the overlay that displays info on the hovered vessel/part.
   /// </summary>
-  [PersistentField("VesselInfo/backgroundColor")]
-  Color vesselInfoBackgroundColor = new Color(0.0f, 0.0f, 0.0f, 0.5f);
+  [PersistentField("InfoOverlay/backgroundColor")]
+  Color infoOverlayBackgroundColor = new Color(0.0f, 0.0f, 0.0f, 0.5f);
 
   /// <summary>
   /// Foreground color of the text in overlay that displays info on the hovered vessel/part.
   /// </summary>
-  [PersistentField("VesselInfo/textColor")]
-  Color vesselInfoTextColor = Color.white;
+  [PersistentField("InfoOverlay/textColor")]
+  Color infoOverlayTextColor = Color.white;
 
   /// <summary>
   /// Padding between text and the border in overlay that displays info on the hovered vessel/part.
   /// </summary>
-  [PersistentField("VesselInfo/hintPadding")]
-  int vesselInfoHintPadding = 3;
+  [PersistentField("InfoOverlay/hintPadding")]
+  int infoOverlayHintPadding = 6;
   #endregion
 
   #region Localizable strings
@@ -151,7 +151,7 @@ sealed class Controller : MonoBehaviour {
     GameEvents.onPartCouple.Add(OnPartCouple);
     ConfigAccessor.ReadFieldsInType(typeof(Controller), this);
     mouseInfoOverlay = new HintOverlay(
-        vesselInfoFontSize, vesselInfoHintPadding, vesselInfoTextColor, vesselInfoBackgroundColor);
+        infoOverlayFontSize, infoOverlayHintPadding, infoOverlayTextColor, infoOverlayBackgroundColor);
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>
