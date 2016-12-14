@@ -56,7 +56,7 @@ sealed class Controller : MonoBehaviour {
 
   /// <summary>Key which swicthes camera stabilization modes.</summary>
   [PersistentField("CameraStabilization/switchModeKey")]
-  KeyCode switchStabilizationModeKey = KeyCode.F7;
+  KeyboardInputSwitch switchStabilizationModeKey = new KeyboardInputSwitch(KeyCode.F7);
 
   /// <summary>
   /// Size of the font in the overlay that displays info on the hovered vessel/part.
@@ -172,6 +172,8 @@ sealed class Controller : MonoBehaviour {
 
     // Drop vessel selection when main modifier is released.
     vesselSwitchKey.OnRelease += delegate{ SetHoveredVessel(null); };
+    // Iterate thru stabilization modes.
+    switchStabilizationModeKey.OnClick += SelectNextStabilizationMode;
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>
@@ -195,19 +197,7 @@ sealed class Controller : MonoBehaviour {
   /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Tracks keys and mouse moveement.</remarks>
   void Update() {
-    // Handle stabilization mode switch. 
-    if (Input.GetKeyDown(switchStabilizationModeKey)) {
-      if (cameraStabilizationMode == CameraStabilization.None) {
-        cameraStabilizationMode = CameraStabilization.KeepPosition;
-      } else if (cameraStabilizationMode == CameraStabilization.KeepPosition) {
-        cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
-      } else {
-        cameraStabilizationMode = CameraStabilization.None;
-      }
-      ScreenMessaging.ShowPriorityScreenMessage(
-          CameraStabilizationModeChangedMsg.Format(cameraStabilizationMode));
-    }
-
+    switchStabilizationModeKey.Update();
     if (vesselSwitchKey.Update()) {
       HandleVesselSelection();
     }
@@ -549,6 +539,21 @@ sealed class Controller : MonoBehaviour {
 
     mouseInfoOverlay.text = string.Join("\n", sb.ToArray());
     mouseInfoOverlay.ShowAtCursor();
+  }
+
+  /// <summary>
+  /// Iterates thru <see cref="CameraStabilization"/> values and pick next mode on each call.
+  /// </summary>
+  void SelectNextStabilizationMode() {
+    if (cameraStabilizationMode == CameraStabilization.None) {
+      cameraStabilizationMode = CameraStabilization.KeepPosition;
+    } else if (cameraStabilizationMode == CameraStabilization.KeepPosition) {
+      cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
+    } else {
+      cameraStabilizationMode = CameraStabilization.None;
+    }
+    ScreenMessaging.ShowPriorityScreenMessage(
+        CameraStabilizationModeChangedMsg.Format(cameraStabilizationMode));
   }
 
   /// <summary>Shortcut to get a short vessel title.</summary>
