@@ -102,8 +102,9 @@ sealed class Controller : MonoBehaviour {
   static readonly Message VesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
 
   static readonly Message CurrenPartInFocusStatusMsg = "This part is currently in focus.";
-  static readonly Message NotCurrentVesselPartStatusMsg = "This is NOT a current vessel's part!";
-  static readonly Message<Mouse.Buttons> SetFocustToCurrentPartHintMsg =
+  static readonly Message NotCurrentVesselPartStatusMsg =
+      "This part does NOT belong to the current vessel!";
+  static readonly Message<Mouse.Buttons> SetFocusToCurrentPartHintMsg =
       new Message<Mouse.Buttons>("Click {0} mouse button to set focus on this part.");
   static readonly Message<Mouse.Buttons> ResetFocusToCurrentVesselHintMsg =
       new Message<Mouse.Buttons>("Click {0} mouse button to reset focus to the current vessel.");
@@ -486,7 +487,7 @@ sealed class Controller : MonoBehaviour {
         sb.Add(CurrenPartInFocusStatusMsg);
         sb.Add(AnotherPartFocusHintMsg);
       } else {
-        sb.Add(SetFocustToCurrentPartHintMsg.Format(switchMouseButton));
+        sb.Add(SetFocusToCurrentPartHintMsg.Format(switchMouseButton));
       }
       if (camera.targetMode == FlightCamera.TargetMode.Part) {
         sb.Add(ResetFocusHintMsg);
