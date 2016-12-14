@@ -2,7 +2,6 @@
 // Author: igor.zavoychinskiy@gmail.com
 // This software is distributed under Public domain license.
 
-using Highlighting;
 using KSPDev.ConfigUtils;
 using KSPDev.GUIUtils;
 using System;
@@ -410,7 +409,10 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>Sets vessel which is currently has mouse focus.</summary>
-  /// <remarks>Current vessel is highlighted with the configured color.</remarks>
+  /// <remarks>
+  /// Current vessel is highlighted with the configured color. It's OK to call this method multiple
+  /// time, nothing will be done if vessel is already highlighted.
+  /// </remarks>
   /// <param name="vessel">A vessel to set as current.</param>
   void SetHoveredVessel(Vessel vessel) {
     if (vessel != hoveredVessel) {
