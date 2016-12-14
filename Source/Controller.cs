@@ -4,6 +4,7 @@
 
 using KSPDev.ConfigUtils;
 using KSPDev.GUIUtils;
+using KSPDev.ProcessingUtils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
