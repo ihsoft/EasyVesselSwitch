@@ -2,6 +2,7 @@
   "PACKAGE_NAME": "EasyVesselSwitch",
   "SRC" : "..",
   "DEST" : "../Release",
+  "ARCHIVE_DEST" : "..",
   "STRUCTURE" : {
     "" : [
       "/LICENSE.md",
