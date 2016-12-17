@@ -1,0 +1,21 @@
+{
+  "PACKAGE_NAME": "EasyVesselSwitch",
+  "SRC" : "..",
+  "DEST" : "../Release",
+  "STRUCTURE" : {
+    "" : [
+      "/LICENSE.md",
+      "/README.md"
+    ],
+    "Plugins" : [
+      "{SRC_COMPILED_BINARY}",
+      "{SRC_REPOSITORY_VERSION_FILE}",
+      "/Binaries/KSPDev_Utils*.dll",
+      "/Binaries/KSPDev_Utils_License.md",
+      "/Binaries/MiniAVC.dll"
+    ],
+    "Plugins/PluginData" : [
+      "/PluginData/*"
+    ]
+  }
+}
