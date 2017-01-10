@@ -50,3 +50,4 @@ Source/bin
 Source/obj
 Release
 EasyVesselSwitch_v*.zip
+*.pyc
