@@ -24,8 +24,8 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can use the default the Revision and 
 // Build Numbers by using the '*' as shown below:
-[assembly: AssemblyVersion ("1.2.0")]
-[assembly: AssemblyInformationalVersion ("1.2.0 for KSP v1.2")]
+[assembly: AssemblyVersion ("1.3.0")]
+[assembly: AssemblyInformationalVersion ("1.3.0 for KSP v1.3")]
 [assembly: Guid ("52fd90de-a2a6-4642-8fc4-50f8d938319c")]
-[assembly: KSPAssembly ("EasyVesselSwitch", 1, 2)]
+[assembly: KSPAssembly ("EasyVesselSwitch", 1, 3)]
 [assembly: AssemblyFlags (AssemblyNameFlags.PublicKey | AssemblyNameFlags.EnableJITcompileOptimizer)]
