@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>KSPDev_Utils.0.19.0</name>
+        <name>KSPDev_Utils.0.23.0</name>
     </assembly>
     <members>
         <member name="T:KSPDev.ConfigUtils.AbstractCollectionTypeProto">
@@ -188,18 +188,98 @@
         </member>
         <member name="F:KSPDev.ConfigUtils.AbstractPersistentFieldsFileAttribute.configFilePath">
             <summary>An optional relative path to the config file.</summary>
-            <remarks>Absolute name is resolved via <see cref="M:KSPDev.FSUtils.KspPaths.makePluginPath(System.String)"/>. If left
-            empty then data is read from the game's database. Note, that database access is read-only.  
+            <remarks>
+            Absolute name is resolved via <see cref="M:KSPDev.FSUtils.KspPaths.MakeAbsPathForGameData(System.String[])"/>. If left
+            empty then data is read from the game's database. Note, that database access is read-only.
             </remarks>
         </member>
         <member name="M:KSPDev.ConfigUtils.AbstractPersistentFieldsFileAttribute.#ctor(System.String,System.String,System.String)">
-            <param name="configFilePath">A relative or an absolute path to the file. It's resolved via
-            <see cref="M:KSPDev.FSUtils.KspPaths.makePluginPath(System.String)"/>. If empty then data is read from database.
+            <summary>Constructor for a persistent field.</summary>
+            <param name="configFilePath">
+            A relative or an absolute path to the file. It's resolved via
+            <see cref="M:KSPDev.FSUtils.KspPaths.MakeAbsPathForGameData(System.String[])"/>. If empty then data is read from
+            database.
             </param>
-            <param name="nodePath">A root for the persistent fields when saving or loading via this
-            annotation. If empty then root node of the file is used. Cannot be <c>null</c></param>
-            <param name="group">A group of the annotation. When saving or loading persistent fields only
-            the fields of this group will be considered. Must not be <c>null</c>.</param>
+            <param name="nodePath">
+            A root for the persistent fields when saving or loading via this annotation. If empty then
+            root node of the file is used. Cannot be <c>null</c>
+            </param>
+            <param name="group">
+            A group of the annotation. When saving or loading persistent fields only the fields of this
+            group will be considered. Must not be <c>null</c>.
+            </param>
+        </member>
+        <member name="T:KSPDev.ConfigUtils.IPersistentField">
+             <summary>Interface for the simple types that need custom (de)serialization logic.</summary>
+             <remarks>
+             It's similar to <c>IConfigNode</c> interface in the compound types but with the following
+             differences:
+             <list type="bullet">
+             <item>The value is (de)serialized from/to a simple string.</item>
+             <item>
+             If the field is initialized to an instance of the type, then this instance will be used to
+             deserialize the value. If the field is not initialized but there is a value in the config file,
+             then a new instance will be created. For this reason the type must implement a default
+             constructor.
+             </item>
+             </list>
+             <para>
+             Note that the types that implement this interface will <i>never</i> be treated as compound. I.e.
+             <see cref="T:KSPDev.ConfigUtils.ConfigAccessor"/> will not try to persist the members of such types even though there
+             may be fields attributed with <see cref="T:KSPDev.ConfigUtils.PersistentFieldAttribute"/>.
+             </para>
+             </remarks>
+             <example>
+             Here is how a simple vector serialization may look like:
+             <code><![CDATA[
+             public class MyVector : IPeristentField {
+               float x;
+               float y;
+            
+               /// <inheritdoc/>
+               public string SerializeToString() {
+                 return string.Format("{0},{1}", x ,y);
+               }
+               /// <inheritdoc/>
+               public void ParseFromString(string value) {
+                 var elements = value.Split(',');
+                 x = float.Parse(elements[0]);
+                 y = float.Parse(elements[1]);
+               }
+             }
+             ]]></code>
+             <para>
+             This example doesn't do any checking when parsing the string, but in general it's a good idea to
+             do a sanity check of the string. It's OK to throw an exception from the parsing method when the
+             data is invalid.
+             </para>
+             </example>
+             <seealso cref="T:KSPDev.ConfigUtils.ConfigAccessor"/>
+             <seealso cref="T:KSPDev.ConfigUtils.PersistentFieldAttribute"/>
+        </member>
+        <member name="M:KSPDev.ConfigUtils.IPersistentField.SerializeToString">
+            <summary>Returns the object's state as a plain string.</summary>
+            <returns>Object's state.</returns>
+        </member>
+        <member name="M:KSPDev.ConfigUtils.IPersistentField.ParseFromString(System.String)">
+            <summary>Restores the object's state from a plain string.</summary>
+            <param name="value">String value to restore from.</param>
+            <remarks>It's OK to throw exceptions if the value cannot be parsed.</remarks>
+        </member>
+        <member name="T:KSPDev.ConfigUtils.PartConfig">
+            <summary>Helper methods to access and manipulate part's configs.</summary>
+        </member>
+        <member name="M:KSPDev.ConfigUtils.PartConfig.GetModuleConfig(PartModule,ConfigNode)">
+            <summary>Gets a config of the part module.</summary>
+            <remarks>
+            It takes into account the module index, so in case of the part has multiple modules of the
+            same type, the right module config will be returned.
+            </remarks>
+            <param name="module">Module to get config for.</param>
+            <param name="partNode">
+            Part's config to use. If omitted then part's prefab config is used.
+            </param>
+            <returns>Either the found config node or an empty node. It's never <c>null</c>.</returns>
         </member>
         <member name="T:KSPDev.ConfigUtils.PersistentFieldsDatabaseAttribute">
             <summary>
@@ -211,7 +291,7 @@
             <para>Each <c>.cfg</c> file in the mod's folders is scanned and indexed by the game on start. The
             data is stored in the database where it can be accessed from the game. The access is read-only,
             any changes to the node returned from the database won't affect the database state.</para>
-            <para>Config file in the database is indentified by a key which is made of three major parts:
+            <para>The config file in the database is identified by a key which is made of three major parts:
             <list type="">
             <item>A file path relative to <c>GameData</c>.</item>
             <item>The config filename without extension.</item>
@@ -240,9 +320,15 @@
             <seealso cref="M:KSPDev.ConfigUtils.ConfigAccessor.WriteFieldsFromType(System.Type,System.Object,System.String)"/>
         </member>
         <member name="M:KSPDev.ConfigUtils.PersistentFieldsDatabaseAttribute.#ctor(System.String,System.String)">
-            <param name="nodePath">An absolute path to the node in the game's database.</param>
-            <param name="group">A group of the annotation. When saving or loading persistent fields only
-            the fields of this group will be considered. Must not be <c>null</c>.</param>
+            <param name="nodePath">
+            An absolute path to the node in the game's database. Note that this must be a path to the
+            config's <i>root</i>. This path is used to find the right settings <i>file</i>, not the right
+            node within a file.
+            </param>
+            <param name="group">
+            A group of the annotation. When saving or loading the persistent fields only the fields of
+            this group will be considered. Must not be <c>null</c>.
+            </param>
         </member>
         <member name="T:KSPDev.ConfigUtils.PersistentFieldsFileAttribute">
              <summary>
@@ -397,9 +483,11 @@
         </member>
         <member name="F:KSPDev.ConfigUtils.StdPersistentGroups.Default">
             <summary>A public group that can be saved/loaded on every game scene.</summary>
-            <remarks>By the contract any caller can save/load this group at any time. If class declares
-            persistent fields with specific save/load logic then they need to have a group different from
-            the default.</remarks>
+            <remarks>
+            By the contract any caller can save/load this group at any time. If the class declares
+            persistent fields with a specific save/load logic then they need to have a group different
+            from the default.
+            </remarks>
         </member>
         <member name="T:KSPDev.ConfigUtils.ConfigAccessor">
             <summary>A service class that simplifies accessing configuration files.</summary>
@@ -412,13 +500,18 @@
         </member>
         <member name="M:KSPDev.ConfigUtils.ConfigAccessor.ReadFieldsFromFile(System.String,System.Type,System.Object,System.String,System.String)">
             <summary>Reads values of the annotated persistent fields from a config file.</summary>
-            <param name="filePath">A relative or an absolute path to the file. It's resolved via
-            <see cref="M:KSPDev.FSUtils.KspPaths.makePluginPath(System.String)"/>.</param>
+            <param name="filePath">
+            A relative or an absolute path to the file. It's resolved via
+            <see cref="M:KSPDev.FSUtils.KspPaths.MakeAbsPathForGameData(System.String[])"/>.
+            </param>
             <param name="type">A type to load fields for.</param>
-            <param name="instance">An instance of type <paramref name="type"/>. If it's <c>null</c> then
-            only static fields will be loaded.</param>
-            <param name="nodePath">An optional path in the file. All type's field will be read relative
-            to this part.</param>
+            <param name="instance">
+            An instance of type <paramref name="type"/>. If it's <c>null</c> then
+            only static fields will be loaded.
+            </param>
+            <param name="nodePath">
+            An optional path in the file. All type's field will be read relative to this part.
+            </param>
             <param name="group">A group tag (see <see cref="T:KSPDev.ConfigUtils.AbstractPersistentFieldAttribute"/>).</param>
             <seealso cref="T:KSPDev.ConfigUtils.PersistentFieldAttribute"/>
         </member>
@@ -456,19 +549,27 @@
         </member>
         <member name="M:KSPDev.ConfigUtils.ConfigAccessor.WriteFieldsIntoFile(System.String,System.Type,System.Object,System.String,System.Boolean,System.String)">
             <summary>Writes values of the annotated persistent fields into a file.</summary>
-            <remarks>All persitent values are <b>added</b> into the file provided. I.e. if node had
-            already had a value being persited then it either overwritten (ordinary fields) or extended
-            (collection fields).</remarks>
-            <param name="filePath">A relative or an absolute path to the file. It's resolved via
-            <see cref="M:KSPDev.FSUtils.KspPaths.makePluginPath(System.String)"/>.</param>
-            <param name="rootNodePath">A path to the node in the file where the data should be
-            written. If the node already exsist it will be deleted.</param>
+            <remarks>
+            All persitent values are <b>added</b> into the file provided. I.e. if node had already had a
+            value being persited then it either overwritten (ordinary fields) or extended (collection
+            fields).
+            </remarks>
+            <param name="filePath">
+            A relative or an absolute path to the file. It's resolved via
+            <see cref="M:KSPDev.FSUtils.KspPaths.MakeAbsPathForGameData(System.String[])"/>.
+            </param>
+            <param name="rootNodePath">
+            A path to the node in the file where the data should be written. If the node already exsists
+            it will be deleted.
+            </param>
             <param name="type">A type to write fields for.</param>
-            <param name="instance">An instance of type <paramref name="type"/>. If it's <c>null</c> then
-            only static fields will be written.</param>
-            <paramref name="rootNodePath"/> node will be updated in that file. Otherwise, a new file
-            <param name="mergeMode">If <c>true</c> and the file already exists then only
-            will be created.</param>
+            <param name="instance">
+            An instance of type <paramref name="type"/>. If it's <c>null</c> then only static fields will
+            be written.
+            </param>
+            <param name="mergeMode">
+            If <c>true</c> and the file already exists then only will be created.
+            </param>
             <param name="group">A group tag (see <see cref="T:KSPDev.ConfigUtils.AbstractPersistentFieldAttribute"/>).</param>
             <seealso cref="T:KSPDev.ConfigUtils.PersistentFieldAttribute"/>
         </member>
@@ -746,170 +847,191 @@
             <returns>New configuration node with the data.</returns>
         </member>
         <member name="M:KSPDev.ConfigUtils.PersistentField.DeserializeCompoundFieldsFromNode(ConfigNode,System.Object)">
-            <summary>Sets compound type field values from the config node.</summary>
+            <summary>Sets a compound type field values from the config node.</summary>
             <param name="node">Node to read values from.</param>
             <param name="instance">Owner of the fields.</param>
         </member>
         <member name="T:KSPDev.ConfigUtils.PersistentFieldAttribute">
-            <summary>A simple attribute for fields that need (de)serialization.</summary>
-            <remarks>
-            This form allows adjusting any <see cref="T:KSPDev.ConfigUtils.AbstractPersistentFieldAttribute"/> property
-            in the annotation, and has a shortcut to mark a field as collection
-            (<c><see cref="P:KSPDev.ConfigUtils.PersistentFieldAttribute.isCollection"/> = true</c>).
-            <para>
-            By default ordinal values are handled via <see cref="T:KSPDev.ConfigUtils.StandardOrdinaryTypesProto"/>
-            and collection fields via <see cref="T:KSPDev.ConfigUtils.GenericCollectionTypeProto"/>. These proto handlers can
-            be changed in the annotation by assigning values to properties
-            <see cref="P:KSPDev.ConfigUtils.PersistentFieldAttribute.ordinaryTypeProto"/> and/or <see cref="P:KSPDev.ConfigUtils.PersistentFieldAttribute.collectionTypeProto"/>.
-            </para>
-            </remarks>
-            <example>
-            Below is a simple usage of the attribute.
-            <code><![CDATA[
-            class ClassWithPersistentFields {
-              [PersistentField("my/listField", isCollection = true)]
-              private List<string> sampleList = new List<string>();
+             <summary>A simple attribute for the fields that need (de)serialization.</summary>
+             <remarks>
+             This form allows adjusting any <see cref="T:KSPDev.ConfigUtils.AbstractPersistentFieldAttribute"/> property
+             in the annotation, and has a shortcut to mark a field as a collection
+             (<c><see cref="P:KSPDev.ConfigUtils.PersistentFieldAttribute.isCollection"/> = true</c>).
+             <para>
+             By default the ordinal values are handled via <see cref="T:KSPDev.ConfigUtils.StandardOrdinaryTypesProto"/>
+             and the collection fields via <see cref="T:KSPDev.ConfigUtils.GenericCollectionTypeProto"/>. These proto handlers can
+             be changed in the annotation by assigning properties
+             <see cref="P:KSPDev.ConfigUtils.PersistentFieldAttribute.ordinaryTypeProto"/> and/or <see cref="P:KSPDev.ConfigUtils.PersistentFieldAttribute.collectionTypeProto"/>.
+             </para>
+             </remarks>
+             <example>
+             Below is a simple usage of the attribute.
+             <code><![CDATA[
+             class ClassWithPersistentFields {
+               [PersistentField("my/listField", isCollection = true)]
+               private List<string> sampleList = new List<string>();
+             
+               internal struct ComplexType {
+                 [PersistentField("val1", group = "nevermind")]
+                 public bool boolVal;
+                 [PersistentField("val2")]
+                 public Color colorVal;
+               }
+             
+               [PersistentField("my/setField", isCollection = true, group = "abc")]
+               private HashSet<ComplexType> sampleSet = new HashSet<ComplexType>();
+             
+               void SaveConfigs() {
+                 // Save a default group of fields: only field "sampleList" qualifies.
+                 ConfigAccessor.WriteFieldsIntoFile("settings.cfg", instance: this);
+                 /* The following structure in the file will be created:
+                  * {
+                  *   my
+                  *   {
+                  *     listField: string1
+                  *     listField: string2
+                  *   }
+                  * }
+                  */
+             
+                 // Save a specific group of fields: only field "sampleSet" belongs to group "abc".
+                 sampleSet.Add(new ComplexType() { boolVal = true, colorVal = Color.black });
+                 sampleSet.Add(new ComplexType() { boolVal = false, colorVal = Color.white });
+                 ConfigAccessor.WriteFieldsIntoFile("settings.cfg", instance: this, group: "abc");
+                 /* The following structure in the file will be created:
+                  * {
+                  *     setField
+                  *     {
+                  *       val1: True
+                  *       val2: 0,0,0,1
+                  *     }
+                  *     setField
+                  *     {
+                  *       val1: false
+                  *       val2: 1,1,1,1
+                  *     }
+                  *   }
+                  * }
+                  */
+               }
+             }
+             ]]></code>
+             <para>
+             Note that the group is ignored in the nested types. I.e. in <c>ComplexType</c> in this case.
+             However, if <c>ComplexType</c> was an immediate target of the <c>WriteFieldsIntoFile</c> call
+             then the group would be considered.
+             </para>
+             <para>
+             Visibility of the annotated field is also important. The persistent field attributes are only
+             visible in the child class if they were public or protected in the parent. The private field
+             annotations are not inherited and need to be handled at the level of the declaring class.
+             </para>
+             <code><![CDATA[
+             class Parent {
+               [PersistentField("parent_private")]
+               private int field1 = 1;
+             
+               [PersistentField("parent_protected")]
+               protected int field2 = 2;
+             
+               [PersistentField("parent_public")]
+               public int field3 = 3;
+             }
+             
+             class Child : Parent {
+               [PersistentField("child_private")]
+               private int field1 = 10;
+             
+               void SaveConfig() {
+                 // Save all fields in the inherited type. 
+                 ConfigAccessor.WriteFieldsIntoFile("settings.cfg", instance: this);
+                 /* The following structure in the file will be created:
+                  * {
+                  *     parent_protected: 2
+                  *     parent_public: 3
+                  *     child_private: 10
+                  * }
+                  */
+             
+                 // Save all fields in the base type. 
+                 ConfigAccessor.WriteFieldsIntoFile("settings.cfg", instance: (Parent) this);
+                 /* The following structure in the file will be created:
+                  * {
+                  *     parent_private: 1
+                  *     parent_protected: 2
+                  *     parent_public: 3
+                  * }
+                  */
+               }
+             }
+             ]]></code>
+             <para>
+             The code above implies that in a common case unsealed class should put the private fields in a
+             group other than default to avoid settings collision.
+             </para>
+             <para>
+             When the type of the field is different from a primitive C# type or a common Unity 4 type you
+             may need to provide a custom value handler to deal with (de)serializing. E.g. for an ordinary
+             type it may look like this:
+             </para>
+             <code><![CDATA[
+             class CustomType {
+               [PersistentField("my/custom/type", ordinaryTypeProto = typeof(MyTypeProto))]
+               private MyType field1;
+             }
+             ]]></code>
+             <para>
+             Or your custom class can implement a KSP interface <see cref="T:IConfigNode"/>, and it will be
+             invoked during the field saving and restoring.
+             </para>
+             <code><![CDATA[
+             class NodeCustomType : IConfigNode {
+               public virtual void Save(ConfigNode node) {
+               }
+               public virtual void Load(ConfigNode node) {
+               }
+             }
+             ]]></code>
+             <para>
+             It's important to note that complex (a.k.a. "compound") types like this are only handled when
+             the field's value is not <c>null</c>. I.e. in the following example the value of <c>field1</c>
+             will not be restored even if there is a node in the config file:
+             </para>
+             <code><![CDATA[
+             class MyModule : PartModule {
+               [PersistentField("field1")]
+               public NodeCustomType field1;
             
-              internal struct ComplexType {
-                [PersistentField("val1", group = "nevermind")]
-                public bool boolVal;
-                [PersistentField("val2")]
-                public Color colorVal;
-              }
-            
-              [PersistentField("my/setField", isCollection = true, group = "abc")]
-              private HashSet<ComplexType> sampleSet = new HashSet<ComplexType>();
-            
-              void SaveConfigs() {
-                // Save a default group of fields: only field "sampleList" qualifies.
-                ConfigAccessor.WriteFieldsIntoFile("settings.cfg", instance: this);
-                /* The following structure in the file will be created:
-                 * {
-                 *   my
-                 *   {
-                 *     listField: string1
-                 *     listField: string2
-                 *   }
-                 * }
-                 */
-            
-                // Save a specific group of fields: only field "sampleSet" belongs to group "abc".
-                sampleSet.Add(new ComplexType() { boolVal = true, colorVal = Color.black });
-                sampleSet.Add(new ComplexType() { boolVal = false, colorVal = Color.white });
-                ConfigAccessor.WriteFieldsIntoFile("settings.cfg", instance: this, group: "abc");
-                /* The following structure in the file will be created:
-                 * {
-                 *     setField
-                 *     {
-                 *       val1: True
-                 *       val2: 0,0,0,1
-                 *     }
-                 *     setField
-                 *     {
-                 *       val1: false
-                 *       val2: 1,1,1,1
-                 *     }
-                 *   }
-                 * }
-                 */
-              }
-            }
-            ]]></code>
-            <para>
-            Note that group is ignored in the nested types. I.e. in <c>ComplexType</c> in this case. Though,
-            if <c>ComplexType</c> was an immediate target of the <c>WriteFieldsIntoFile</c> call then the
-            group would be considered.
-            </para>
-            <para>
-            Visibility of the annotated field is also important. Persistent field attributes are only
-            visible in the child class if they were public or protected in the parent. Private field
-            annotations are not inherited and need to be handled at the level of the declaring class.
-            </para>
-            <code><![CDATA[
-            class Parent {
-              [PersistentField("parent_private")]
-              private int field1 = 1;
-            
-              [PersistentField("parent_protected")]
-              protected int field2 = 2;
-            
-              [PersistentField("parent_public")]
-              public int field3 = 3;
-            }
-            
-            class Child : Parent {
-              [PersistentField("child_private")]
-              private int field1 = 10;
-            
-              void SaveConfig() {
-                // Save all fields in the inherited type. 
-                ConfigAccessor.WriteFieldsIntoFile("settings.cfg", instance: this);
-                /* The following structure in the file will be created:
-                 * {
-                 *     parent_protected: 2
-                 *     parent_public: 3
-                 *     child_private: 10
-                 * }
-                 */
-            
-                // Save all fields in the base type. 
-                ConfigAccessor.WriteFieldsIntoFile("settings.cfg", instance: (Parent) this);
-                /* The following structure in the file will be created:
-                 * {
-                 *     parent_private: 1
-                 *     parent_protected: 2
-                 *     parent_public: 3
-                 * }
-                 */
-              }
-            }
-            ]]></code>
-            <para>
-            The code above implies that in a common case unsealed class should put private fields in a group
-            other than default to avoid settings collision.
-            </para>
-            <para>
-            When type of the field is different from primitive C# type or common Unity 4 type you may need
-            provide custom value handlers to deal with (de)serializing. E.g. for an ordinary type it may
-            look like this:
-            </para>
-            <code><![CDATA[
-            class CustomType {
-              [PersistentField("my/custom/type", ordinaryTypeProto = typeof(MyTypeProto))]
-              private MyType field1;
-            }
-            ]]></code>
-            <para>
-            Or you custom class can implement KSP interface <see cref="T:IConfigNode"/>, and it will be
-            invoked during field saving and restoring.
-            </para>
-            <code><![CDATA[
-            class NodeCustomType : IConfigNode {
-              public virtual void Save(ConfigNode node) {
-              }
-              public virtual void Load(ConfigNode node) {
-              }
-            }
-            ]]></code>
-            <para>
-            If your custom type is a collection that cannot be handled by the standard proto you can provide
-            your own collection proto handler. Note that if you do then annotated field will be treated as a
-            collection. In fact, when you set <c>isCollection = true</c> what actually happens is just
-            assigning <see cref="T:KSPDev.ConfigUtils.GenericCollectionTypeProto"/> as a collection proto handler.
-            </para>
-            <code><![CDATA[
-            class CustomTypes {
-              [PersistentField("my/custom/type", collectionTypeProto = typeof(MyCollectionProto))]
-              private MyCollection field1;
-            ]]>}
-            </code>
-            For more examples on custom proto handlers see <see cref="T:KSPDev.ConfigUtils.AbstractOrdinaryValueTypeProto"/> and
-            <see cref="T:KSPDev.ConfigUtils.AbstractCollectionTypeProto"/>.
-            </example>
-            <seealso cref="T:KSPDev.ConfigUtils.ConfigAccessor"/>
-            <seealso cref="T:KSPDev.ConfigUtils.AbstractOrdinaryValueTypeProto"/>
-            <seealso cref="T:KSPDev.ConfigUtils.AbstractCollectionTypeProto"/>
-            <seealso href="https://kerbalspaceprogram.com/api/interface_i_config_node.html">KSP: IConfigNode</seealso>
+               [PersistentField("field2")]
+               public NodeCustomType field2 = new NodeCustomType();
+             }
+             ]]></code>
+             <para>
+             In case of your type is really simple, and you can serialize it into a plain string, you may
+             choose to implement <see cref="T:KSPDev.ConfigUtils.IPersistentField"/> instead. It works in a similar way but the
+             source/target of the persistense is a string instead of a config node. Simple types deal with
+             <c>null</c>'s in a different way (read the docs for the interface).
+             </para>
+             <para>
+             If your custom type is a collection that cannot be handled by the standard proto you can provide
+             your own collection proto handler. Note that if you do then the annotated field will be treated
+             as a collection. In fact, when you set <c>isCollection = true</c> what actually happens is just
+             assigning <see cref="T:KSPDev.ConfigUtils.GenericCollectionTypeProto"/> as a collection proto handler.
+             </para>
+             <code><![CDATA[
+             class CustomTypes {
+               [PersistentField("my/custom/type", collectionTypeProto = typeof(MyCollectionProto))]
+               private MyCollection field1;
+             }
+             ]]></code>
+             For more examples on custom proto handlers see <see cref="T:KSPDev.ConfigUtils.AbstractOrdinaryValueTypeProto"/> and
+             <see cref="T:KSPDev.ConfigUtils.AbstractCollectionTypeProto"/>.
+             </example>
+             <seealso cref="T:KSPDev.ConfigUtils.ConfigAccessor"/>
+             <seealso cref="T:KSPDev.ConfigUtils.AbstractOrdinaryValueTypeProto"/>
+             <seealso cref="T:KSPDev.ConfigUtils.AbstractCollectionTypeProto"/>
+             <seealso cref="T:KSPDev.ConfigUtils.IPersistentField"/>
+             <seealso href="https://kerbalspaceprogram.com/api/interface_i_config_node.html">KSP: IConfigNode</seealso>
         </member>
         <member name="M:KSPDev.ConfigUtils.PersistentFieldAttribute.#ctor(System.String)">
             <inheritdoc/>
@@ -969,15 +1091,63 @@
         <member name="F:KSPDev.FSUtils.KspPaths.pluginsRootFolder">
             <summary>Standard plug-ins folder.</summary>
         </member>
-        <member name="M:KSPDev.FSUtils.KspPaths.makePluginPath(System.String)">
-            <summary>Makes an absolute file path given a relative one.</summary>
-            <param name="path">A relative or an absolute part. If the first case the path is translated
-            from the game's plugin root folder ("GameData" as of KSP 1.0.5). If argument is an absolute
-            path then it's returned as is.</param>
-            <returns>Absolute file path.</returns>
+        <member name="M:KSPDev.FSUtils.KspPaths.MakeAbsPathForGameData(System.String[])">
+            <summary>
+            Makes full absolute path from the provided relative path in the game's <c>GameData</c> folder.
+            </summary>
+            <remarks>
+            If joining of all the provided parts gives a full path then it's only normalized. In case of
+            path is relative it's resolved against game's <c>GameData</c> folder.
+            <para>Note that method doesn't care if the path exists.</para>
+            </remarks>
+            <param name="pathParts">Path parts for an absolute or relative path.</param>
+            <returns>
+            Absolute path. All relative casts (e.g. '..') will be resolved, and all
+            directory separators will be translated to the platform format (e.g. '/' will become '\' on
+            Windows). 
+            </returns>
+        </member>
+        <member name="M:KSPDev.FSUtils.KspPaths.NormalizePath(System.String)">
+            <summary>
+            Normalizes path by resolving all upcasts. Works for both relative and absolute paths.
+            </summary>
+            <remarks>Note that method doesn't care if the path exists.</remarks>
+            <param name="path">Path to normalize.</param>
+            <returns>
+            Path with no <c>.</c> or <c>..</c> casts. All directory separators will be translated to
+            <c>/</c> regardless to the platform settings.
+            </returns>
+            <seealso cref="M:KSPDev.FSUtils.KspPaths.MakeRelativePathToGameData(System.String[])"/>
+        </member>
+        <member name="M:KSPDev.FSUtils.KspPaths.MakeRelativePathToGameData(System.String[])">
+            <summary>Returns path relative to the game's GameData folder.</summary>
+            <remarks>
+            Note that method doesn't care if the path exists. The returned path will always use <c>/</c>
+            as directory separator regardless to the platform.
+            </remarks>
+            <param name="pathParts">Path parts tp consutruct an absolute or relative path.</param>
+            <returns>
+            Relative path. All relative casts (e.g. '..') will be resolved, and all
+            directory separators will be translated to <c>/</c> regardless to the platform settings.
+            </returns>
+            <example>
+            Let's say mod's exact location is not known (e.g. as it is for MiniAVC) and the mod needs to
+            load a texture. In order to do it the mod needs to know a <c>GameData</c> relative path which
+            can be used as a prefix to the texture. Below is a sample code that figures it out.
+            <code><![CDATA[
+            var assembly = Assembly.GetExecutingAssembly();
+            var relPath = KspPaths.MakeRelativePathToGameData(assembly.Location);
+            Debug.LogWarningFormat("Assembly {0} is loaded from {1}", assembly.FullName, relPath);
+            // Pretend the mod's DLL lives in 'Plugins' subfolder.
+            var textureFolder = KspPaths.NormalizePath(Path.GetDirectoryName(relPath) + "/../Textures");
+            // Get a texture from 'Textures' folder that lives in the mods's root.
+            var texture = GameDatabase.Instance.GetTexture(textureFolder + "/MyTexture.png", false);
+            ]]></code>
+            </example>
+            <seealso cref="M:KSPDev.FSUtils.KspPaths.NormalizePath(System.String)"/>
         </member>
         <member name="P:KSPDev.FSUtils.KspPaths.pluginsRoot">
-            <summary>Returns full path to the plugins root folder.</summary>
+            <summary>Returns full path to the plugins root folder (a.k.a. <c>GameData</c>).</summary>
         </member>
         <member name="T:KSPDev.GUIUtils.Formatter">
             <summary>Helper to format various values.</summary>
@@ -1060,18 +1230,19 @@
         </member>
         <member name="T:KSPDev.GUIUtils.MessageEnumValue`1">
              <summary>A class to wrap a UI string for an enum value.</summary>
+             <typeparam name="T">Enum type to define the strings for.</typeparam>
              <remarks>
              <para>
-             When string needs to be presented use <see cref="M:KSPDev.GUIUtils.MessageEnumValue`1.Format(`0)"/> to make the parameter substitute.
+             When a string needs to be presented, use <see cref="M:KSPDev.GUIUtils.MessageEnumValue`1.Format(`0)"/> to make the parameter substitute.
              </para>
              <para>
              In the future it may support localization but for now it's only a convinience wrapper.
              </para>
              </remarks>
              <example>
-             Instead of doing switches when an enum value should be presented on UI just define a message
-             that declares a map between values and their UI representations. You don't need specify every
-             single value in the map, there is an option to set a UI string for unknown value.  
+             Instead of doing switches when an enum value should be presented on UI, just define a message
+             that declares a map between the values and their UI representations. You don't need to specify
+             every single value in the map, there is an option to set a UI string for an unknown value.  
              <code><![CDATA[
              class MyMod : MonoBehaviour {
                enum MyEnum {
@@ -1082,14 +1253,14 @@
                  UnusedValue3,
                }
             
-               // Lookup with custom value for an unknown key.
+               // Lookup with a custom value for an unknown key.
                static readonly MessageEnumValue<MyEnum> Msg1 =
                    new MessageEnumValue<MyEnum>("UNKNOWN") {
                      {MyEnum.Enabled, "ENABLED"},
                      {MyEnum.Disabled, "DISABLED"},
                    };
             
-               // Default lookup.
+               // A more extended lookup.
                static readonly MessageEnumValue<MyEnum> Msg2 =
                    new MessageEnumValue<MyEnum>() {
                      {MyEnum.Enabled, "ENABLED"},
@@ -1111,13 +1282,14 @@
              </example>
         </member>
         <member name="M:KSPDev.GUIUtils.MessageEnumValue`1.#ctor(System.String)">
-            <summary>Creates an empty message with a default value for unknow entries.</summary>
+            <summary>Creates an empty message with a default value for the unknown entries.</summary>
             <param name="unknownKeyValue">
-            Value to return if lookup dictionary doesn't have the requested key.
+            Value to return if the lookup dictionary doesn't have the requested key.
             </param>
         </member>
         <member name="M:KSPDev.GUIUtils.MessageEnumValue`1.GetEnumerator">
-            <inheritdoc/>
+            <summary>Returns a key/pair enumerator.</summary>
+            <returns>Key/value enumerator.</returns>
         </member>
         <member name="M:KSPDev.GUIUtils.MessageEnumValue`1.Add(`0,System.String)">
             <summary>Adds a new lookup for the key.</summary>
@@ -1125,9 +1297,13 @@
             <param name="value">GUI string for the key.</param>
         </member>
         <member name="M:KSPDev.GUIUtils.MessageEnumValue`1.Format(`0)">
-            <summary>Formats message string with the provided arguments.</summary>
+            <summary>Formats a message string with the provided arguments.</summary>
             <param name="arg1">An argument to substitute.</param>
             <returns>Complete message string.</returns>
+        </member>
+        <member name="M:KSPDev.GUIUtils.MessageEnumValue`1.System#Collections#IEnumerable#GetEnumerator">
+            <summary>Returns an untyped key/value enumerator.</summary>
+            <returns>Key/value enumerator.</returns>
         </member>
         <member name="T:KSPDev.GUIUtils.MessageSpecialFloatValue">
              <summary>
@@ -2024,12 +2200,41 @@
             <summary>Triggers when connection is broken due to too strong force applied.</summary>
             <param name="breakForce">Actual force that has been applied.</param>
         </member>
-        <member name="T:KSPDev.KSPInterfaces.IKSPActivateOnDecouple">
-            <summary>Documented analogue of IActivateOnDecouple interface.</summary>
+        <member name="T:KSPDev.KSPInterfaces.IKSPDevJointLockState">
+            <summary>A documented version of the KSP <c>IJointLockState</c> interface.</summary>
             <remarks>
-            Inherit from <see cref="T:IActivateOnDecouple"/> to be able reacting on parts decoupling.
-            <see cref="T:KSPDev.KSPInterfaces.IKSPDevModuleInfo"/> is a full equivalent except it's documented.
-            Inheriting modules from both interfaces gives better code documentation.
+            Inherit from <see cref="T:IJointLockState"/> to let the game know if this part's joint can be
+            unlocked. This interface is a full equivalent of <see cref="T:IJointLockState"></see> except it's
+            documented. The modules that inherit both interfaces get better code documentation.
+            </remarks>
+            <example>
+            <code><![CDATA[
+            public class MyModule : PartModule, IJointLockState, IKSPDevJointLockState {
+              /// <inheritdoc/>
+              public override bool IsJointUnlocked() {
+                return true;
+              }
+            }
+            ]]></code>
+            </example>
+        </member>
+        <member name="M:KSPDev.KSPInterfaces.IKSPDevJointLockState.IsJointUnlocked">
+            <summary>Tells if the parts can move relative to each other.</summary>
+            <remarks>
+            <para>
+            It's important to override this method when the joint is not rigid. For the rigid joints the
+            game may create autostruts when appropriate, which will adhere the parts to each other.
+            </para>
+            <para>This method is called on the child part to check it's joint state to the parent.</para>
+            </remarks>
+            <returns><c>true</c> if the joint are not fixed relative to each other.</returns>
+        </member>
+        <member name="T:KSPDev.KSPInterfaces.IKSPActivateOnDecouple">
+            <summary>A documented version of the <see cref="T:IActivateOnDecouple"/> interface.</summary>
+            <remarks>
+            Inherit from <see cref="T:IActivateOnDecouple"/> to be able reacting on the parts decoupling.
+            This interface is a full equivalent of <see cref="T:IActivateOnDecouple"/> except it's documented.
+            The modules that inherit both interfaces get better code documentation.
             </remarks>
             <example>
             <code><![CDATA[
@@ -2047,12 +2252,13 @@
         <member name="M:KSPDev.KSPInterfaces.IKSPActivateOnDecouple.DecoupleAction(System.String,System.Boolean)">
             <summary>Called when two parts decouple.</summary>
             <remarks>
-            Callback is only called on the part if it has an attach node that connects it to the other
-            part. Just removing from the vessel hierarchy won't trigger the event.
+            The callback is only called on the part if it has an attach node that connects it to the other
+            part. For this event to fire a decoupling logic must be executed. A s imple removal from the
+            vessel hierarchy won't trigger the event.
             </remarks>
-            <param name="nodeName">Attach node name that has been detached.</param>
+            <param name="nodeName">The attach node name that has been detached.</param>
             <param name="weDecouple">
-            If <c>true</c> then the part being notified was a child in the relation of the detached part.
+            If <c>true</c> then the part being notified was a child in the relation to the detached part.
             </param>
         </member>
         <member name="T:KSPDev.KSPInterfaces.IKSPDevModuleInfo">
@@ -2104,10 +2310,12 @@
         <member name="T:KSPDev.KSPInterfaces.IPartModule">
              <summary>Interface for KSP part module.</summary>
              <remarks>
+             <para>
              Naturally, KSP doesn't declare any part module interface (unfortunately), and all modder's
              modules just inherit from <see cref="T:PartModule"/>. This interface is introduced for the better
              OOP approach. It reveals methods that a regular module can override, and provides documentation
              for each of them.
+             </para>
              <para>
              Some methods of the module interface look familiar to the ones from Unity but they are not
              behaving in the same way in every scene. Moreover, not all methods get called in every scene.
@@ -2325,7 +2533,7 @@
             <summary>Triggers when Unity object is about to destroy.</summary>
         </member>
         <member name="T:KSPDev.KSPInterfaces.IsPackable">
-            <summary>Interface to track physics state changes in the part's module.</summary>
+            <summary>Interface to track the physics state changes in the part's module.</summary>
             <remarks>
             Events of this inteface are triggered by KSP engine via Unity messaging mechanism. It's not
             required for the module to implement the interface to be notified but by implementing it the
@@ -2336,11 +2544,11 @@
             public class MyModule : PartModule, IsPackable {
               /// <inheritdoc/>
               public void OnPartPack() {
-                Debug.LogInfo("OnPartPack");
+                Debug.Log("OnPartPack");
               }
               /// <inheritdoc/>
               public void OnPartUnpack() {
-                Debug.LogInfo("OnPartUnpack);
+                Debug.Log("OnPartUnpack);
               }
             }
             ]]></code>
@@ -2354,6 +2562,31 @@
         </member>
         <member name="M:KSPDev.KSPInterfaces.IsPackable.OnPartUnpack">
             <summary>Triggers when physics starts on the part.</summary>
+        </member>
+        <member name="T:KSPDev.KSPInterfaces.IsPartDeathListener">
+            <summary>Interface to notify about part's forced destruction.</summary>
+            <remarks>
+            Events of this inteface are triggered by the KSP engine via Unity messaging mechanism. It's not
+            required for the module to implement the interface to be notified but by implementing it the
+            code becomes more consistent and less error prone.
+            </remarks>
+            <example>
+            <code><![CDATA[
+            public class MyModule : PartModule, IsPartDeathListener {
+              /// <inheritdoc/>
+              public virtual void OnPartDie() {
+                Debug.LogFromat("OnPartDie: {0}", part.name);
+              }
+            }
+            ]]></code>
+            </example>
+            <seealso href="https://docs.unity3d.com/ScriptReference/GameObject.SendMessage.html">
+            Unity 3D: GameObject.SendMessage</seealso>
+            <seealso href="https://kerbalspaceprogram.com/api/class_part.html">KSP: Part</seealso>
+        </member>
+        <member name="M:KSPDev.KSPInterfaces.IsPartDeathListener.OnPartDie">
+            <summary>Triggers when part ois destroyed by the game's logic.</summary>
+            <remarks>At this moment the part is already decoupled from the vessel.</remarks>
         </member>
         <member name="T:KSPDev.KSPInterfaces.IsPhysicalObject">
             <summary>Interface for modules that need handling physics.</summary>
@@ -2391,7 +2624,29 @@
             <param name="p">Part to get ID string for.</param>
             <returns>ID string.</returns>
         </member>
-        <member name="M:KSPDev.LogUtils.DbgFormatter.C2S``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.String})">
+        <member name="M:KSPDev.LogUtils.DbgFormatter.Vector(UnityEngine.Vector3)">
+            <summary>Returns a string represenation of a vector with more precision.</summary>
+            <param name="vec">Vector to dump.</param>
+            <returns>String representation.</returns>
+        </member>
+        <member name="M:KSPDev.LogUtils.DbgFormatter.Quaternion(UnityEngine.Quaternion)">
+            <summary>Returns a string represenation of a quaternion with more precision.</summary>
+            <param name="rot">Quaternion to dump.</param>
+            <returns>String representation.</returns>
+        </member>
+        <member name="M:KSPDev.LogUtils.DbgFormatter.TranformPath(UnityEngine.Transform,UnityEngine.Transform)">
+            <summary>Returns a full string path for the tranform.</summary>
+            <param name="obj">Object to make the path for.</param>
+            <param name="parent">Optional parent to use a root.</param>
+            <returns>Full string path to the root.</returns>
+        </member>
+        <member name="M:KSPDev.LogUtils.DbgFormatter.TranformPath(UnityEngine.GameObject,UnityEngine.Transform)">
+            <summary>Returns a full string path for the game object.</summary>
+            <param name="obj">Object to make the path for.</param>
+            <param name="parent">Optional parent to use a root.</param>
+            <returns>Full string path to the root.</returns>
+        </member>
+        <member name="M:KSPDev.LogUtils.DbgFormatter.C2S``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.String},System.String)">
             <summary>Flatterns collection items into a comma separated string.</summary>
             <remarks>This method's name is a shorthand for "Collection-To-String". Given a collection
             (e.g. list, set, or anything else implementing <c>IEnumarable</c>) this method transforms it
@@ -2399,35 +2654,51 @@
             <param name="collection">A collection to represent as a string.</param>
             <param name="predicate">A predicate to use to extract string representation of an item. If
             <c>null</c> then standard <c>ToString()</c> is used.</param>
+            <param name="separator">String to use to glue the parts.</param>
             <returns>Human readable form of the collection.</returns>
             <typeparam name="TSource">Collection's item type.</typeparam>
+        </member>
+        <member name="T:KSPDev.ModelUtils.AlignTransforms">
+            <summary>Helper methods to align transformations relative to each other.</summary>
+        </member>
+        <member name="M:KSPDev.ModelUtils.AlignTransforms.SnapAlign(UnityEngine.Transform,UnityEngine.Transform,UnityEngine.Transform)">
+            <summary>
+            Aligns the source node so that it's located at the target, and source and target are "looking"
+            at each other.
+            </summary>
+            <param name="source">Node to align.</param>
+            <param name="sourceChild">Child node of the source to use as the align point.</param>
+            <param name="target">Target node to align with.</param>
         </member>
         <member name="T:KSPDev.ModelUtils.Colliders">
             <summary>Various tools to deal with procedural colliders.</summary>
         </member>
         <member name="M:KSPDev.ModelUtils.Colliders.SetSimpleCollider(UnityEngine.GameObject,UnityEngine.PrimitiveType,System.Boolean)">
-            <summary>Drops colliders in all children objects, and adds one big collider to the parent.
+            <summary>
+            Drops the colliders in all the children objects, and adds one big collider to the parent.
             </summary>
             <remarks>
-            Intended to create one fast collider at the cost of precision. All the meshes in the parent
-            childs (including the parent) are processed to produce a boundary box. Then, this box is
-            applied to the requested primitive type that defines the shape of the collider.
+            The main purpose of this method is to create one fast collider at the cost of precision. All
+            the meshes in the object (the parent and the children) are processed to produce a single
+            boundary box. Then, this box is applied to the requested primitive type that defines the shape
+            of the final collider.
             <para>
-            Note, that rdaius if sphere and capsule is the same in both X and Y axis. If combined boundary
-            box has any of the dimensions significantly different then it makes sense to choose a
-            different collider type. Or break down the hirearchy into more colliders.
+            Note, that radius of the sphere and the capsule colliders is the same on both X and Y axis.
+            If the combined boundary box has any of the dimensions significantly different then it makes
+            sense to choose a different collider type. Or break down the hirearchy into more colliders.
             </para>
             </remarks>
             <param name="parent">Parent object.</param>
             <param name="type">
-            Type of the primitive mesh which is the best for wrapping all the meshes of the object. Only
-            <see cref="F:UnityEngine.PrimitiveType.Cube"/>, <see cref="F:UnityEngine.PrimitiveType.Capsule"/>, and
-            <see cref="F:UnityEngine.PrimitiveType.Sphere"/> are supported.
+            Type of the primitive which describes the parent object most precise in terms of the shape.
+            Only <see cref="F:UnityEngine.PrimitiveType.Cube"/>, <see cref="F:UnityEngine.PrimitiveType.Sphere"/>,
+            <see cref="F:UnityEngine.PrimitiveType.Cylinder"/>, and <see cref="F:UnityEngine.PrimitiveType.Capsule"/> are supported.
+            The two latter types produce in the same collider type - the capsule.
             </param>
             <param name="inscribeBoundaryIntoCollider">
-            If <c>true</c> then collider will define the outer boundaries so what all the meshes are
-            inside the volume. Otherwise, the combined meshes box will define the outer boundary of the
-            collider. It only makes sense for the colliders other than <see cref="F:UnityEngine.PrimitiveType.Cube"/>.
+            When calculating the total volume of the object, all its meshes produce a single box boundary.
+            Then, the collider either wraps this box entirely, or sits inside it entirely. If this
+            parameter is <c>true</c> then the collider will cover the boundary box.
             </param>
             <seealso href="https://docs.unity3d.com/ScriptReference/GameObject.html">
             Unity 3D: GameObject</seealso>
@@ -2464,6 +2735,37 @@
             <see cref="F:UnityEngine.PrimitiveType.Cube"/> are supported.
             </param>
         </member>
+        <member name="M:KSPDev.ModelUtils.Colliders.SetCollisionIgnores(UnityEngine.Transform,UnityEngine.Transform,System.Boolean)">
+            <summary>Disables/enables all the colliders between the objects.</summary>
+            <remarks>
+            All colliders in all the children of the both objects are explicitly set to not collide with
+            each other. The ignore state is reset to <c>false</c> on every scene load.
+            </remarks>
+            <param name="obj1">Source object.</param>
+            <param name="obj2">Target object.</param>
+            <param name="ignore">
+            If <c>true</c> then the collisions between the objects will be ignored. Otherwise, the
+            collisions will be handled.
+            </param>
+            <seealso href="https://docs.unity3d.com/ScriptReference/Collider.html">
+            Unity3D: Collider</seealso>
+            <seealso href="https://docs.unity3d.com/ScriptReference/Physics.IgnoreCollision.html">
+            Unity3D: Physics.IgnoreCollision</seealso>
+        </member>
+        <member name="M:KSPDev.ModelUtils.Colliders.SetCollisionIgnores(Part,Part,System.Boolean)">
+            <summary>Disables/enables all the colliders between the parts.</summary>
+            <remarks>The ignore state is reset to <c>false</c> on every scene load.</remarks>
+            <param name="part1">Source part.</param>
+            <param name="part2">Target part.</param>
+            <param name="ignore">
+            If <c>true</c> then the collisions between the parts will be ignored. Otherwise, the
+            collisions will be handled.
+            </param>
+            <seealso href="https://docs.unity3d.com/ScriptReference/Collider.html">
+            Unity3D: Collider</seealso>
+            <seealso href="https://docs.unity3d.com/ScriptReference/Physics.IgnoreCollision.html">
+            Unity3D: Physics.IgnoreCollision</seealso>
+        </member>
         <member name="T:KSPDev.ModelUtils.Colliders.PrimitiveCollider">
             <summary>Defines how collisions should be checked on a primitive.</summary>
         </member>
@@ -2486,6 +2788,9 @@
         <member name="T:KSPDev.ModelUtils.Hierarchy">
             <summary>Various tools to deal with game object hierarchy.</summary>
         </member>
+        <member name="F:KSPDev.ModelUtils.Hierarchy.ReSplitEscapedPath">
+            <summary>Regex to split an escaped path.</summary>
+        </member>
         <member name="M:KSPDev.ModelUtils.Hierarchy.MoveToParent(UnityEngine.Transform,UnityEngine.Transform,System.Nullable{UnityEngine.Vector3},System.Nullable{UnityEngine.Quaternion},System.Nullable{UnityEngine.Vector3})">
             <summary>Changes transform's parent keeping local postion, rotation and scale.</summary>
             <remarks>
@@ -2498,76 +2803,174 @@
             <param name="newRotation">Local rotation to set instead of the original one.</param>
             <param name="newScale">Local scale to set instead of the original one.</param>
         </member>
+        <member name="M:KSPDev.ModelUtils.Hierarchy.PatternMatch(System.String,System.String)">
+            <summary>
+            Checks target string against a simple pattern which allows prefix, suffix, and contains match.
+            The match is case-sensitive.
+            </summary>
+            <param name="pattern">
+            Pattern to match for:
+            <list type="bullet">
+            <item>If pattern ends with <c>*</c> then it's a match by prefix.</item>
+            <item>If pattern starts with <c>*</c> then it's a match by suffix.</item>
+            <item>
+            If pattern starts and ends with <c>*</c> then pattern is searched anywhere in the target.
+            </item>
+            </list>
+            </param>
+            <param name="target">The target string to check.</param>
+            <returns><c>true</c> if pattern matches the target.</returns>
+        </member>
         <member name="M:KSPDev.ModelUtils.Hierarchy.FindTransformInChildren(UnityEngine.Transform,System.String)">
             <summary>Finds a transform by name down the hierarchy.</summary>
             <remarks>
             Implements breadth-first search approach to minimize depth of the found transform.
             </remarks>
-            <param name="parent">Transfrom to start from.</param>
-            <param name="name">Name of the transfrom.</param>
-            <returns>Found transform or <c>null</c> if nothing is found.</returns>
+            <param name="parent">The transfrom to start from.</param>
+            <param name="name">The name of the transfrom.</param>
+            <returns>A transform or <c>null</c> if nothing is found.</returns>
         </member>
         <member name="M:KSPDev.ModelUtils.Hierarchy.FindTransformByPath(UnityEngine.Transform,System.String)">
-            <summary>Finds transform treating the name as a hierarchy path.</summary>
-            <param name="parent">Transfrom to start looking from.</param>
+            <summary>Finds a transform in the hirerachy by the provided path.</summary>
+            <remarks>See path format in <see cref="M:KSPDev.ModelUtils.Hierarchy.FindTransformByPath(UnityEngine.Transform,System.String[])"/>.</remarks>
+            <param name="parent">The transfrom to start looking from.</param>
             <param name="path">
-            Path to the target. Path elements are separated by "/" symbol. Element can be name or a
-            pattern.
+            The path to the target. The name components must be escaped if they contain special symbols.
             </param>
-            <returns>Transform or <c>null</c> if nothing found.</returns>
+            <returns>A transform or <c>null</c> if nothing found.</returns>
+            <seealso cref="M:KSPDev.ModelUtils.Hierarchy.FindTransformByPath(UnityEngine.Transform,System.String[])"/>
+            <seealso cref="M:KSPDev.ModelUtils.Hierarchy.EscapeName(System.String)"/>
         </member>
         <member name="M:KSPDev.ModelUtils.Hierarchy.FindTransformByPath(UnityEngine.Transform,System.String[])">
-            <summary>Finds transform treating the name as a hierarchy path.</summary>
+            <summary>Finds a transform in the hirerachy by the provided path.</summary>
             <remarks>
-            Elements of the path may specify exact transform name or be one of the following patterns:
+            Every element of the path may specify an exact transform name or a partial match pattern:
             <list type="bullet">
             <item>
-            "*" - any child  will match. I.e. all children of the preceding parent will be checked for the
-            branch that follows the pattern. First full match will be returned. E.g. if the are parts
-            "a/b/c" and "a/aa/c" then pattern "a/*/c" will match "a/b/c" since child "b" is the first in
-            the children list. This pattern can be nested to specify that barcnh is expected to be found
-            at the exact depth: "a/*/*/c".
+            <c>*</c> - any name matches. Such patterns can be nested to specify the desired level of
+            nesting. E.g. <c>*/*/a</c> will look for name <c>a</c> in the grandchildren.
             </item>
             <item>
-            "**" - any path will match. I.e. all the branches of the preceding parent will be checked
-            until one of them is matched the sub-path that follows the pattern. The shortest path is used
-            in case of multple hits. E.g. if there are paths "a/b/c" and "a/c" then pattern "a/**/c" will
-            match path "a/c". This pattern cannot be followed by another pattern, but it can follow "*"
-            pattern, e.g. "a/*/**/c" (get "c" from any branch of "a" given the depth level is greater than
-            1).
+            <c>*</c> as a prefix - the name is matched by suffix. E.g. <c>*a</c> matches any name that
+            ends with <c>a</c>.
+            </item>
+            <item>
+            <c>*</c> as a suffix - the name is matched by prefix. E.g. <c>a*</c> matches any name that
+            starts with <c>a</c>.
+            </item>
+            <item>
+            <c>**</c> - any <i>path</i> matches. What will eventually be found depends on the pattern to
+            the right of <c>**</c>. The path match pattern does a "breadth-first" search, i.e. it tries to
+            find the shortest path possible. E.g. <c>**/a/b</c> will go through all the nodes starting
+            from the parent until path <c>a/b</c> is found. Be careful with this pattern since in case of
+            not matching anything it will walk thought the <i>whole</i> hirerachy.
             </item>
             </list>
             <para>
-            Keep in mind that patterns require children scan, and in a worst case scenario all the
-            hirerachy can be scanned multiple times.
+            All patterns except <c>**</c> may have a matching index. It can be used to resolve matches
+            when there are multiple objects found with the same name and at the <i>same level</i>. E.g. if
+            there are two objects with name "a" at the root level then the first one can be accessed by
+            pattern <c>a:0</c>, and the second one by pattern <c>a:1</c>.
+            </para>
+            <para>
+            Path search is <i>slow</i> since it needs walking though the hierarchy nodes. In the worst
+            case all the nodes will be visited. Don't use this method in the performance demanding
+            methods.
             </para>
             </remarks>
-            <param name="parent">Transfrom to start looking from.</param>
-            <param name="names">Path elements.</param>
+            <param name="parent">The transfrom to start looking from.</param>
+            <param name="names">The path elements. All special symbols must be unescaped.</param>
             <returns>Transform or <c>null</c> if nothing found.</returns>
+            <example>
+            Given the following hierarchy:
+            <code lang="c++"><![CDATA[
+            // a
+            // + b
+            // | + c
+            // | | + c1
+            // | | + d
+            // | + c
+            // |   + d
+            // |     + e
+            // |       + e1
+            // + abc
+            ]]></code>
+            <para>The following pattern/output will be possible:</para>
+            <code><![CDATA[
+            // a/b/c/d/e/e1 => node "e1"
+            // a/b/*/d/e/e1 => node "e1"
+            // a/b/*/*/e/e1 => node "e1"
+            // a/b/c/c1 => node "с1"
+            // a/b/*:0 => branch "a/b/c/c1", node "c"
+            // a/b/*:1 => branch "a/b/c/d/e/e1", node "c"
+            // a/b/c:1/d => branch "a/b/c/d/e/e1", node "d"
+            // **/e1 => node "e1"
+            // **/c1 => node "c1"
+            // **/c/d => AMBIGUITY! The first found branch will be taken
+            // a/**/e1 => node "e1"
+            // *bc => node "abc"
+            // ab* => node "abc"
+            // *b* => node "abc"
+            ]]></code>
+            </example>
+            <seealso cref="M:KSPDev.ModelUtils.Hierarchy.UnescapeName(System.String)"/>
         </member>
         <member name="M:KSPDev.ModelUtils.Hierarchy.GetPartModelTransform(Part)">
             <summary>Returns part's model transform.</summary>
-            <param name="part">Part to get model for.</param>
-            <returns>PartModel's transform if it was found. Part's trasnfrom otherwise.</returns>
+            <param name="part">The part to get model for.</param>
+            <returns>
+            The part's model transform if one was found. Or the root part's transform otherwise.
+            </returns>
         </member>
         <member name="M:KSPDev.ModelUtils.Hierarchy.ListHirerahcy(UnityEngine.Transform,System.String)">
             <summary>
-            Returns paths to all transformations in the object. Each item is a full path to the
-            transformation.
+            Returns the paths to all the transformations in the object. Each item is a full path to the
+            transformation starting from the <paramref name="parent"/>.
             </summary>
-            <param name="parent">Object to start from.</param>
-            <param name="parentPath">
-            Path to <paramref name="parent"/>. Leave it <c>null</c> if paths should start from "/".
-            </param>
-            <returns>paths to all transformations separated by LF symbol.</returns>
+            <param name="parent">The object to start from.</param>
+            <param name="pathPrefix">The prefix to add to every path in the result.</param>
+            <returns>The paths to all the objects in the hirerachy separated by a LF symbol.</returns>
         </member>
         <member name="M:KSPDev.ModelUtils.Hierarchy.GetFullPath(UnityEngine.Transform,UnityEngine.Transform)">
-            <summary>Returns full path to the object starting from the specified parent.</summary>
-            <param name="obj">Object to find path for.</param>
-            <param name="parent">Optional parent to use a root.</param>
-            <returns>Full path to the object.</returns>
+            <summary>Returns a full path to the object starting from the specified parent.</summary>
+            <param name="obj">The object to find path for.</param>
+            <param name="parent">
+            The object at which the path must stop. If <c>null</c> then the path is gathered to the root
+            object.
+            </param>
+            <returns>A full path name components. The names are not escaped.</returns>
             <seealso cref="M:KSPDev.ModelUtils.Hierarchy.FindTransformByPath(UnityEngine.Transform,System.String[])"/>
+        </member>
+        <member name="M:KSPDev.ModelUtils.Hierarchy.SplitAndUnescapePath(System.String)">
+            <summary>Splits a path and unescapes the name elements.</summary>
+            <remarks>
+            The path elements must be separted by a <c>'/'</c> symbol. The name elements must be escaped
+            in case of they contain a separator symbol in the content. 
+            </remarks>
+            <param name="escapedPath">The escaped path to split.</param>
+            <returns>An array of unescaped names.</returns>
+            <seealso cref="M:KSPDev.ModelUtils.Hierarchy.UnescapeName(System.String)"/>
+        </member>
+        <member name="M:KSPDev.ModelUtils.Hierarchy.MakePath(System.String[])">
+            <summary>Escapes the element names and builds a path.</summary>
+            <param name="unescapedNames">The raw name elements of the path.</param>
+            <returns>An escaped path built of the provided elements.</returns>
+            <seealso cref="M:KSPDev.ModelUtils.Hierarchy.EscapeName(System.String)"/>
+        </member>
+        <member name="M:KSPDev.ModelUtils.Hierarchy.UnescapeName(System.String)">
+            <summary>Unescapes all the special symbols in the name.</summary>
+            <param name="escapedName">The name where all the special symbols are escaped.</param>
+            <returns>An unescaped name.</returns>
+        </member>
+        <member name="M:KSPDev.ModelUtils.Hierarchy.EscapeName(System.String)">
+            <summary>Escapes all the special symbols in the name.</summary>
+            <remarks>
+            For now the only specil symbol is <c>/</c> (slash) because of it's used as a name separator
+            in the hierarchy paths. The escaped separator symbol is simple doubled. I.e. string <c>a/b</c>
+            transforms into <c>a//b</c>.
+            </remarks>
+            <param name="unescapedName">The raw name with any symbols.</param>
+            <returns>A name where all the special symbols are properly escaped.</returns>
         </member>
         <member name="T:KSPDev.ModelUtils.KspLayerMask">
             <summary>Flags for the collision layers in KSP.</summary>
@@ -2710,19 +3113,19 @@
             <summary>Translates meshes's verticies.</summary>
             <remarks>
             This is different from setting postion, rotation and scale to the transform. This method
-            actually changes vetricies in the mesh. It's not performance effective, so avoid doing it
-            frequiently.
+            <i>actually</i> changes vetricies in the mesh. It's not performance effective, so avoid doing
+            it frequiently.
             </remarks>
-            <param name="model">Model object to change mesh in.</param>
+            <param name="model">Model object to change the mesh in.</param>
             <param name="offset">
-            Offset for the verticies. If not specified then offset is zero. Offset is added <i>after</i>
-            scale and rotation have been applied.  
+            Offset for the verticies. If not specified then the offset is zero. The offset is added
+            <i>after</i> the scale and the rotation have been applied.  
             </param>
             <param name="rotation">
             Rotation for the verticies. If not set then no rotation is added.
             </param>
             <param name="scale">
-            Scale for the vertex positions. If not specified then scale is not affected.
+            Scale for the vertex positions. If not specified then the scale is not affected.
             </param>
         </member>
         <member name="T:KSPDev.ProcessingUtils.AsyncCall">
@@ -2730,24 +3133,9 @@
             <remarks>
             Use these tools when code needs to be executed with some delay or at a specific moment of the
             game.
-            <code><![CDATA[
-            class MyComponent : MonoBehaviour {
-              void MyAsyncMethod(string a, int b) {
-                Debug.DebugLogInfo("MyAsyncMethod({0}, {1})", a, b);
-              }
-              void Update() {
-                // Call method at the end of the current frame.
-                AsyncCall.CallOnEndOfFrame(this, x => MyAsyncMethod("a", 1));
-                // Call method after 5 seconds timeout.
-                AsyncCall.CallOnTimeout(this, 5.0f, x => MyAsyncMethod("b", 2));
-                // Call method on the next fixed update.
-                AsyncCall.CallOnFixedUpdate(this, x => MyAsyncMethod("c", 3));
-              }
-            }
-            ]]></code>
             </remarks>
         </member>
-        <member name="M:KSPDev.ProcessingUtils.AsyncCall.CallOnEndOfFrame(UnityEngine.MonoBehaviour,KSPDev.ProcessingUtils.AsyncCall.Action0,System.Object[])">
+        <member name="M:KSPDev.ProcessingUtils.AsyncCall.CallOnEndOfFrame(UnityEngine.MonoBehaviour,System.Action)">
             <summary>Delays execution of the delegate till the end of the current frame.</summary>
             <remarks>
             Caller can continue executing its logic. The delegate will be called at the end of
@@ -2757,13 +3145,22 @@
             Unity object to run coroutine on. If this object dies then the async call will not be invoked.
             </param>
             <param name="action">Delegate to execute.</param>
-            <param name="args">Arguments to pass to the delegate.</param>
             <returns>Coroutine instance.</returns>
+            <example>
+            <code><![CDATA[
+            class MyComponent : MonoBehaviour {
+              void Update() {
+                // Call the method at the end of the current frame.
+                AsyncCall.CallOnEndOfFrame(this, () => Debug.LogFormat("Async call!"));
+              }
+            }
+            ]]></code>
+            </example>
             <seealso href="https://docs.unity3d.com/Manual/Coroutines.html">Unity 3D: Coroutines</seealso>
             <seealso href="https://docs.unity3d.com/ScriptReference/WaitForEndOfFrame.html">
             Unity 3D: WaitForEndOfFrame</seealso>
         </member>
-        <member name="M:KSPDev.ProcessingUtils.AsyncCall.CallOnTimeout(UnityEngine.MonoBehaviour,System.Single,KSPDev.ProcessingUtils.AsyncCall.Action0,System.Object[])">
+        <member name="M:KSPDev.ProcessingUtils.AsyncCall.CallOnTimeout(UnityEngine.MonoBehaviour,System.Single,System.Action)">
             <summary>Delays execution of the delegate for the specified amount of time.</summary>
             <remarks>
             Caller can continue executing its logic. The delegate will be called once the timeout is
@@ -2775,13 +3172,22 @@
             </param>
             <param name="seconds">Timeout in seconds.</param>
             <param name="action">Delegate to execute.</param>
-            <param name="args">Arguments to pass to the delegate.</param>
             <returns>Coroutine instance.</returns>
+            <example>
+            <code><![CDATA[
+            class MyComponent : MonoBehaviour {
+              void Update() {
+                // Call the method at the end of the current frame.
+                AsyncCall.CallOnTimeout(this, 5.0f, () => Debug.LogFormat("Async call!"));
+              }
+            }
+            ]]></code>
+            </example>
             <seealso href="https://docs.unity3d.com/Manual/Coroutines.html">Unity 3D: Coroutines</seealso>
             <seealso href="https://docs.unity3d.com/ScriptReference/WaitForSeconds.html">
             Unity 3D: WaitForSeconds</seealso>
         </member>
-        <member name="M:KSPDev.ProcessingUtils.AsyncCall.CallOnFixedUpdate(UnityEngine.MonoBehaviour,KSPDev.ProcessingUtils.AsyncCall.Action0,System.Object[])">
+        <member name="M:KSPDev.ProcessingUtils.AsyncCall.CallOnFixedUpdate(UnityEngine.MonoBehaviour,System.Action)">
             <summary>Delays execution of the delegate till the next fixed update.</summary>
             <remarks>
             Caller can continue executing its logic. The delegate will be called at the beginning of the
@@ -2792,15 +3198,129 @@
             Unity object to run coroutine on. If this object dies then the async call will not be invoked.
             </param>
             <param name="action">Delegate to execute.</param>
-            <param name="args">Arguments to pass to the delegate.</param>
             <returns>Coroutine instance.</returns>
+            <example>
+            <code><![CDATA[
+            class MyComponent : MonoBehaviour {
+              void Update() {
+                // Call the method at the end of the current frame.
+                AsyncCall.CallOnFixedUpdate(this, () => Debug.LogFormat("Async call!"));
+              }
+            }
+            ]]></code>
+            </example>
             <seealso href="https://docs.unity3d.com/Manual/Coroutines.html">Unity 3D: Coroutines</seealso>
             <seealso href="https://docs.unity3d.com/ScriptReference/WaitForFixedUpdate.html">
             Unity 3D: WaitForFixedUpdate</seealso>
         </member>
-        <member name="T:KSPDev.ProcessingUtils.AsyncCall.Action0">
-            <summary>Delayed execution delegate.</summary>
-            <param name="list">Optional list of parameters.</param>
+        <member name="M:KSPDev.ProcessingUtils.AsyncCall.WaitForPhysics(UnityEngine.MonoBehaviour,System.Int32,System.Func{System.Boolean},System.Action,System.Action,System.Action{System.Int32},System.Boolean)">
+            <summary>
+            Delays execution until the specified condition is reached. Waiting is limited by the specified
+            number of fixed frame updates.
+            </summary>
+            <remarks>
+            Can be used when a particular state of the game is required to perform an action. Method
+            provides ability to define for how long to wait, what to do while waiting, and what to execute
+            when target state is reached or missed.
+            </remarks>
+            <param name="mono">
+            Unity object to run coroutine on. If this object dies then waiting will be aborted without
+            calling any callbacks.
+            </param>
+            <param name="maxFrames">Number of fixed frame updates to wait before giving up.</param>
+            <param name="waitUntilFn">
+            State checking function. It should return <c>true</c> once target state is reached. The very
+            first execution happens immediately, <i>before</i> exiting from the method. If this
+            this execution returned <c>true</c> then the successful callback is also called immediately. 
+            </param>
+            <param name="success">Callback to execute when state has been successfully reached.</param>
+            <param name="failure">
+            Callabck to execute when state has not been reached before frame update limit is exhausted.
+            </param>
+            <param name="update">
+            Callback to execute every fixed frame update while waiting. This callabck will be called at
+            least once, and teh first call happens immediately. The argument tells how many frames the
+            method was waiting so far. For the very first call it's, obviously, zero.
+            </param>
+            <param name="traceUpdates">When <c>true</c> every wiating cycle will be logged.</param>
+            <returns>Enumerator that can be used as coroutine target.</returns>
+            <example>
+            <code><![CDATA[
+            class MyComponent : MonoBehaviour {
+              void Awake() {
+                var count = 5;
+                Debug.Log("Before start waiting");
+                AsyncCall.WaitForPhysics(
+                    this, 10,
+                    () => --count == 0,
+                    success: () => Debug.Log("Success!"),
+                    failure: () => Debug.Log("Failure!"),
+                    update: x => Debug.LogFormat("...waiting: {0}", x));
+                Debug.Log("After start waiting");
+              }
+            }
+            ]]></code>
+            <para>
+            This example will print the following:
+            </para>
+            <code><![CDATA[
+            // Before start waiting
+            // ...waiting: 0
+            // After start waiting
+            // ...waiting: 1
+            // ...waiting: 2
+            // ...waiting: 3
+            // ...waiting: 4
+            // Success!
+            ]]></code>
+            <para>If you adjust <c>count</c> to <c>11</c> then the last message will be "Failure!".</para>
+            </example>
+            <seealso cref="M:KSPDev.ProcessingUtils.AsyncCall.AsyncWaitForPhysics(System.Int32,System.Func{System.Boolean},System.Action,System.Action,System.Action{System.Int32},System.Boolean)"/>
+            <seealso href="https://docs.unity3d.com/Manual/Coroutines.html">Unity 3D: Coroutines</seealso>
+            <seealso href="https://docs.unity3d.com/ScriptReference/WaitForFixedUpdate.html">
+            Unity 3D: WaitForFixedUpdate</seealso>
+        </member>
+        <member name="M:KSPDev.ProcessingUtils.AsyncCall.AsyncWaitForPhysics(System.Int32,System.Func{System.Boolean},System.Action,System.Action,System.Action{System.Int32},System.Boolean)">
+            <summary>Async version of <see cref="M:KSPDev.ProcessingUtils.AsyncCall.WaitForPhysics(UnityEngine.MonoBehaviour,System.Int32,System.Func{System.Boolean},System.Action,System.Action,System.Action{System.Int32},System.Boolean)"/>.</summary>
+            <param name="maxFrames">Number of fixed frame updates to wait before giving up.</param>
+            <param name="waitUntilFn">
+            State checking function. It should return <c>true</c> once target state is reached. The very
+            first execution happens immediately, <i>before</i> exiting from the method. If this
+            this execution returned <c>true</c> then the successful callback is also called immediately. 
+            </param>
+            <param name="success">Callback to execute when state has been successfully reached.</param>
+            <param name="failure">
+            Callabck to execute when state has not been reached before frame update limit is exhausted.
+            </param>
+            <param name="update">
+            Callback to execute every fixed frame update while waiting. This callabck will be called at
+            least once, and teh first call happens immediately. The argument tells how many frames the
+            method was waiting so far. For the very first call it's, obviously, zero.
+            </param>
+            <param name="traceUpdates">When <c>true</c> every wiating cycle will be logged.</param>
+            <returns>Enumerator that can be used as a coroutine target.</returns>
+            <seealso cref="M:KSPDev.ProcessingUtils.AsyncCall.WaitForPhysics(UnityEngine.MonoBehaviour,System.Int32,System.Func{System.Boolean},System.Action,System.Action,System.Action{System.Int32},System.Boolean)"/>
+            <example>
+            This method is useful when synchronous wait is needed within a coroutine. Instead of
+            implementing own loops just return the waiting enumerator. The code below will log 10 waiting
+            lines between "Started" and "Ended" records. 
+            <code><![CDATA[
+            class MyComponent : MonoBehaviour {
+              void Awake() {
+                StartCoroutine(MyDelayedFn());
+              }
+              IEnumerator MyDelayedFn() {
+                Debug.Log("Started!");
+                yield return AsyncCall.AsyncWaitForPhysics(
+                   10,
+                   () => false,
+                   update: frame => Debug.LogFormat("...waiting frame {0}...", frame));
+                Debug.Log("Ended!");
+              }
+            }
+            ]]></code>
+            </example>
+            <seealso cref="M:KSPDev.ProcessingUtils.AsyncCall.WaitForPhysics(UnityEngine.MonoBehaviour,System.Int32,System.Func{System.Boolean},System.Action,System.Action,System.Action{System.Int32},System.Boolean)"/>
         </member>
         <member name="T:KSPDev.ProcessingUtils.SimpleStateMachine`1">
              <summary>
@@ -3060,6 +3580,83 @@
             <remarks>This callback is called before actual state change.</remarks>
             <param name="fromState">State before change.</param>
             <param name="toState">State after change.</param>
+        </member>
+        <member name="T:KSPDev.Types.PosAndRot">
+            <summary>Type to hold position and rotation of a transform. It can be serialized.</summary>
+            <remarks>
+            The value serializes into 6 numbers separated by a comma. They form two triplets:
+            <list type="bullet">
+            <item>The first triplet is a position: x, y, z.</item>
+            <item>
+            The second triplet is a Euler rotaion around each axis: x, y, z.
+            </item>
+            </list>
+            </remarks>
+        </member>
+        <member name="F:KSPDev.Types.PosAndRot.pos">
+            <summary>Position of the transform.</summary>
+        </member>
+        <member name="M:KSPDev.Types.PosAndRot.#ctor">
+            <summary>Constructs a default instance.</summary>
+            <remarks>Required for the persistence to work correctly.</remarks>
+            <para>
+            By default position is <c>(0,0,0)</c>, Euler angles are <c>(0,0,0)</c>, and the rotation is
+            <c>Quaternion.identity</c>.  
+            </para>
+            <seealso href="https://docs.unity3d.com/ScriptReference/Vector3.html">
+            Unity3D: Vector3</seealso>
+            <seealso href="https://docs.unity3d.com/ScriptReference/Quaternion-identity.html">
+            Unity3D: Quaternion</seealso>
+        </member>
+        <member name="M:KSPDev.Types.PosAndRot.#ctor(KSPDev.Types.PosAndRot)">
+            <summary>Constructs a copy of an object of the same type.</summary>
+            <param name="from">Source object.</param>
+        </member>
+        <member name="M:KSPDev.Types.PosAndRot.#ctor(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>Constructs an object from a transform properties.</summary>
+            <param name="pos">Position of the transform.</param>
+            <param name="euler">Euler rotation of the transform.</param>
+            <seealso href="https://docs.unity3d.com/ScriptReference/Vector3.html">
+            Unity3D: Vector3</seealso>
+            <seealso href="https://docs.unity3d.com/ScriptReference/Transform.html">
+            Unity3D: Transform</seealso>
+        </member>
+        <member name="M:KSPDev.Types.PosAndRot.Clone">
+            <summary>Gives a deep copy of the object.</summary>
+            <returns>New object.</returns>
+        </member>
+        <member name="M:KSPDev.Types.PosAndRot.SerializeToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:KSPDev.Types.PosAndRot.ParseFromString(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:KSPDev.Types.PosAndRot.ToString">
+            <summary>Shows a human readable representation.</summary>
+            <returns>String value.</returns>
+        </member>
+        <member name="M:KSPDev.Types.PosAndRot.NormlizeAngles">
+            <summary>
+            Ensures that all the angles are in the range of <c>[0; 360)</c>. 
+            </summary>
+        </member>
+        <member name="P:KSPDev.Types.PosAndRot.euler">
+            <summary>Euler rotation.</summary>
+            <remarks>
+            The rotation angles are automatically adjusted to stay within the [0; 360) range.
+            </remarks>
+        </member>
+        <member name="P:KSPDev.Types.PosAndRot.rot">
+            <summary>Orientation of the transform.</summary>
+        </member>
+        <member name="T:VersionLogger">
+            <summary>
+            Debugging class that reports which DLL was actually loaded for the Utils assembly.
+            </summary>
+            <remarks>
+            It helps understanding which binary is used in case of multiple mods are using same version of
+            KSPDev_utils assembly.
+            </remarks>
         </member>
     </members>
 </doc>

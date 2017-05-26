@@ -215,7 +215,7 @@ sealed class Controller : MonoBehaviour {
         // Let game core to disable highlighter and then restore it.
         var restoreHighlightPart = lastHoveredPart; // Make a cope for the delayed call.
         AsyncCall.CallOnEndOfFrame(
-            this, x => restoreHighlightPart.highlighter.ConstantOn(targetVesselHighlightColor));
+            this, () => restoreHighlightPart.highlighter.ConstantOn(targetVesselHighlightColor));
       }
       lastHoveredPart = Mouse.HoveredPart;
     }
