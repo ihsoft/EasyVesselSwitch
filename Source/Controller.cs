@@ -14,6 +14,7 @@ using UnityEngine;
 namespace EasyVesselSwitch {
 
 /// <summary>Main mod's class that monitors use interactions.</summary>
+// Next localization ID: #evsLOC_00025.
 [KSPAddon(KSPAddon.Startup.Flight, false /*once*/)]
 [PersistentFieldsFile("EasyVesselSwitch/Plugins/PluginData/settings.cfg", "")]
 sealed class Controller : MonoBehaviour {
@@ -84,33 +85,195 @@ sealed class Controller : MonoBehaviour {
   #endregion
 
   #region Localizable strings
-  static readonly Message SwitchToMsg = "Switch to:";
-  static readonly Message CurrentVesselMsg = "Currently selected:";
-  static readonly Message<VesselType, string> VesselTitleMsg = "{0}: {1}";
-  static readonly Message<string, string, int> KerbalTitleMsg = "{0} ({1}-{2})";
-  static readonly Message<float> VesselMassMsg = "Total mass {0:0.###}t";
-  static readonly Message<string, double> VesselResourceMsg = "{0}: {1:P0}";
-  static readonly Message<string> SinglePartTitleMsg = "Part: {0}";
-  static readonly Message<string> AssemblyTitleMsg = "Assembly: {0}";
-  static readonly Message<double> KerbalEvaFuelMsg = "EVA propellant: {0:F3}";
-  static readonly Message VesselIsControllableMsg = "IS controllable";
-  static readonly Message VesselIsNotControllableMsg = "Is NOT controllable";
-  static readonly Message<CameraStabilization> CameraStabilizationModeChangedMsg =
-      "EVS stabilization: {0}";
-  static readonly Message<float> DistantVesselTargetedMsg = "Vessel is too distant: {0:N0}m";
-  static readonly Message VesselIsAttachedToTheGroundMsg = "IS attached to the ground";
-  static readonly Message VesselIsNotAttachedToTheGroundMsg = "Is NOT attached to the ground";
+  static readonly Message<string> SwitchToMsg = new Message<string>(
+      "#evsLOC_00000",
+      defaultTemplate: "Click [<<1>>] to switch to:",
+      description: "The message to display in the title of the hover menu when the switch mode is"
+      + " activated and the vessel, being hovered, is NOT the currently selected vessel."
+      + " \nArgument <<1>> is the localized name of the mouse button that's bound to the action.");
 
-  static readonly Message CurrenPartInFocusStatusMsg = "This part is currently in focus.";
-  static readonly Message NotCurrentVesselPartStatusMsg =
-      "This part does NOT belong to the current vessel!";
-  static readonly Message<Mouse.Buttons> SetFocusToCurrentPartHintMsg =
-      new Message<Mouse.Buttons>("Click {0} mouse button to set focus on this part.");
-  static readonly Message<Mouse.Buttons> ResetFocusToCurrentVesselHintMsg =
-      new Message<Mouse.Buttons>("Click {0} mouse button to reset focus to the current vessel.");
-  static readonly Message AnotherPartFocusHintMsg = "Hover over another part to change the focus.";
-  static readonly Message SomePartFocusHintMsg = "Hover over a part to set focus on it.";
-  static readonly Message ResetFocusHintMsg = "Point to the outer space to reset focus.";
+  static readonly Message CurrentVesselMsg = new Message(
+      "#evsLOC_00001",
+      defaultTemplate: "Currently selected:",
+      description: "The message to display in the title of the hover menu when the switch mode is"
+      + " activated and the vessel, being hovered, IS the currently selected vessel.");
+
+  static readonly Message<string, string> VesselTitleMsg = new Message<string, string>(
+      "#evsLOC_00002",
+      defaultTemplate: "<<1>>: <<2>>",
+      description: "The pattern to construct a human friendly vessel name."
+      + "\nArgument <<1>> is a localized vessel type (e.g. \"station\")."
+      + "\nArgument <<2>> is the vessel's name.");
+
+  static readonly Message<string, string, int> KerbalTitleMsg = new Message<string, string, int>(
+      "#evsLOC_00003",
+      defaultTemplate: "<<1>> (<<2>>-<<3>>)",
+      description: "The pattern to construct a human friendly kerbal's name."
+      + "\nArgument <<1>> is a full name of the kerbal."
+      + "\nArgument <<2>> is a localized name of the kerbal's main skill (e.g. \"pilot\")."
+      + "\nArgument <<3>> is the current level of the kerbal.");
+
+  static readonly Message<MassType> VesselMassMsg = new Message<MassType>(
+      "#evsLOC_00004",
+      defaultTemplate: "Total mass: <<1>>",
+      description: "The message to display in the hover menu to present the vessel's total mass."
+      + "\nArgument <<1>> is the total mass. Format: MassType.");
+
+  static readonly Message<string> SinglePartTitleMsg = new Message<string>(
+      "#evsLOC_00005",
+      defaultTemplate: "Part: <<1>>",
+      description: "The pattern to construct a human friendly vessel name when the type is Unknown,"
+      + " and the vessel has only one part."
+      + "\nArgument <<1>> is the vessel's name.");
+
+  static readonly Message<string> AssemblyTitleMsg = new Message<string>(
+      "#evsLOC_00006",
+      defaultTemplate: "Assembly: <<1>>",
+      description: "The pattern to construct a human friendly vessel name when the type is Unknown,"
+      + " and the vessel has multiple parts."
+      + "\nArgument <<1>> is the vessel's name.");
+
+  static readonly Message<CompactNumberType> KerbalEvaFuelMsg = new Message<CompactNumberType>(
+      "#evsLOC_00007",
+      defaultTemplate: "EVA propellant: <<1>>",
+      description: "The message to display in the hover menu to present the kerbal's EVA fuel"
+      + " reserve."
+      + "\nArgument <<1>> is the total amount of the fuel. Format: CompactNumberType.");
+
+  static readonly Message VesselIsControllableMsg = new Message(
+      "#evsLOC_00008",
+      defaultTemplate: "Vessel IS controllable",
+      description: "The message to display in the hover menu to tell that the vessel CAN be"
+      + " operated by the player.");
+
+  static readonly Message VesselIsNotControllableMsg = new Message(
+      "#evsLOC_00009",
+      defaultTemplate: "Vessel is NOT controllable",
+      description: "The message to display in the hover menu to tell that the vessel CANNOT be"
+      + " operated by the player.");
+
+  #region CameraStabilization enum values
+  static readonly Message CameraStabilizationMsg_None = new Message(
+      "#evsLOC_00010",
+      defaultTemplate: "NONE",
+      description: "The string that identifies a no camera stabilization mode. It's displayed when"
+      + " the mode is changed.");
+
+  static readonly Message CameraStabilizationMsg_KeepPosition = new Message(
+      "#evsLOC_00011",
+      defaultTemplate: "Keep camera POSITION",
+      description: "The string that identifies a stabilization mode when the camera position is"
+      + " constant, and it only changes the focus to the newly selected vessel/part. It's displayed"
+      + " when the mode is changed.");
+
+  static readonly Message CameraStabilizationMsg_KeepDistanceAndRotation = new Message(
+      "#evsLOC_00012",
+      defaultTemplate: "Keep camera DISTANCE",
+      description: "The string that identifies a stabilization mode when the distance from the"
+      + " camera to the newly selected vessel/part is kept the same as it was on the former"
+      + " vessel/part. It's displayed when the mode is changed.");
+  #endregion
+  
+  static readonly MessageLookup<CameraStabilization> CameraStabilizationModeLookup =
+      new MessageLookup<CameraStabilization>(new Dictionary<CameraStabilization, Message>() {
+          {CameraStabilization.None, CameraStabilizationMsg_None},
+          {CameraStabilization.KeepPosition, CameraStabilizationMsg_KeepPosition},
+          {CameraStabilization.KeepDistanceAndRotation,
+           CameraStabilizationMsg_KeepDistanceAndRotation},
+      });
+
+  static readonly Message<string> CameraStabilizationModeChangedMsg = new Message<string>(
+      "#evsLOC_00013",
+      defaultTemplate: "Stabilization mode: <<1>>",
+      description: "The mesage to present when the EVS mode has changed or updated."
+      + "\nArgumnent <<1>> is a localized description of the mode.");
+
+  static readonly Message<DistanceType> DistantVesselTargetedMsg = new Message<DistanceType>(
+      "#evsLOC_00014",
+      defaultTemplate: "Vessel is too distant: <<1>>",
+      description: "The message to display in the hover menu when the vessel, being hoverd, is too"
+      + " far to switch to it."
+      + "\nArgument <<1>> is the vessel's name.");
+
+  static readonly Message VesselIsAttachedToTheGroundMsg = new Message(
+      "#evsLOC_00015",
+      defaultTemplate: "Vessel IS attached to the ground",
+      description: "The message to display in the hover menu to tell that the vessel IS attached"
+      + " to the ground via the KIS mod part(s).");
+
+  static readonly Message VesselIsNotAttachedToTheGroundMsg = new Message(
+      "#evsLOC_00016",
+      defaultTemplate: "Vessel is NOT attached to the ground",
+      description: "The message to display in the hover menu to tell that the vessel is NOT"
+      + "attached to the ground via the KIS mod part(s).");
+
+  static readonly Message CurrenPartInFocusStatusMsg = new Message(
+      "#evsLOC_00017",
+      defaultTemplate: "This part is currently in focus.",
+      description: "The status message in the hover menu when the player enables the part's focus"
+      + " change mode, but the currently hovered part is already has the focus.");
+
+  static readonly Message NotCurrentVesselPartStatusMsg = new Message(
+      "#evsLOC_00018",
+      defaultTemplate: "This part does NOT belong to the current vessel!",
+      description: "The message to display when the player attempts to set the focus to a part"
+      + " which doesn't belong to the current vessel.");
+
+  #region Mouse.Buttons enum localiztion (not all values)
+  static readonly Message MouseButtonMsg_Left = new Message(
+      "#autoLOC_223620",  // Re-use the stock localization.
+      defaultTemplate: "LMB",
+      description: "The string that identifies the LEFT mouse button.");
+
+  static readonly Message MouseButtonMsg_Right = new Message(
+      "#autoLOC_223621",  // Re-use the stock localization.
+      defaultTemplate: "RMB",
+      description: "The string that identifies the RIGHT mouse button.");
+
+  static readonly Message MouseButtonMsg_Middle = new Message(
+      "#evsLOC_00019",
+      defaultTemplate: "Middle mouse button",
+      description: "The string that identifies the MIDDLE mouse button.");
+  #endregion
+
+  static readonly MessageLookup<Mouse.Buttons> MouseButtonLookup =
+      new MessageLookup<Mouse.Buttons>(new Dictionary<Mouse.Buttons, Message>() {
+          {Mouse.Buttons.Left, MouseButtonMsg_Left},
+          {Mouse.Buttons.Right, MouseButtonMsg_Right},
+          {Mouse.Buttons.Middle, MouseButtonMsg_Middle},
+      });
+
+  static readonly Message<string> SetFocusToCurrentPartHintMsg = new Message<string>(
+      "#evsLOC_00020",
+      defaultTemplate: "Click [<<1>>] to set the focus on this part.",
+      description: "The hint message to display in the hover menu to tell what to do to set the"
+      + " focus on the hoverd part."
+      + "\nArgument <<1>> is the localized name of the mosue button event (e.g. \"LMB\").");
+
+  static readonly Message<string> ResetFocusToCurrentVesselHintMsg = new Message<string>(
+      "#evsLOC_00021",
+      defaultTemplate: "Click [<<1>>] to reset the focus to the current vessel.",
+      description: "The hint message to display in the hover menu to tell what to do to reset the"
+      + " part's focus back to the vessel focus mode."
+      + "\nArgument <<1>> is the localized name of the mosue button event (e.g. \"LMB\").");
+
+  static readonly Message AnotherPartFocusHintMsg = new Message(
+      "#evsLOC_00022",
+      defaultTemplate: "Hover over another part to change the focus.",
+      description: "The hint message to display in the hover menu when the part's focus mode is"
+      + " enabled, but the cirrently hovered part is already in focus.");
+
+  static readonly Message SomePartFocusHintMsg = new Message(
+      "#evsLOC_00023",
+      defaultTemplate: "Hover over a part to set the focus on it.",
+      description: "The hint message to display in the hover menu to tell what to do to set the"
+      + " focus on the currently hovered part.");
+
+  static readonly Message ResetFocusHintMsg = new Message(
+      "#evsLOC_00024",
+      defaultTemplate: "Point to the outer space to reset focus.",
+      description: "The hint message to display in the hover menu to tell what to do to reset the"
+      + " focus to the default vessel focus mode.");
   #endregion
 
   /// <summary>A mode of camera stabilization.</summary>
@@ -484,7 +647,8 @@ sealed class Controller : MonoBehaviour {
         sb.Add(CurrenPartInFocusStatusMsg);
         sb.Add(AnotherPartFocusHintMsg);
       } else {
-        sb.Add(SetFocusToCurrentPartHintMsg.Format(switchMouseButton));
+        sb.Add(SetFocusToCurrentPartHintMsg.Format(
+            MouseButtonLookup.Lookup(switchMouseButton)));
       }
       if (camera.targetMode == FlightCamera.TargetMode.Part) {
         sb.Add(ResetFocusHintMsg);
@@ -495,7 +659,8 @@ sealed class Controller : MonoBehaviour {
       }
     } else {
       if (camera.targetMode == FlightCamera.TargetMode.Part) {
-        sb.Add(ResetFocusToCurrentVesselHintMsg.Format(switchMouseButton));
+        sb.Add(ResetFocusToCurrentVesselHintMsg.Format(
+            MouseButtonLookup.Lookup(switchMouseButton)));
       } else {
         sb.Add(SomePartFocusHintMsg);
       }
@@ -512,7 +677,9 @@ sealed class Controller : MonoBehaviour {
   /// </remarks>
   void ShowHoveredVesselInfo() {
     var sb = new List<string>();
-    sb.Add(hoveredVessel.isActiveVessel ? CurrentVesselMsg : SwitchToMsg);
+    sb.Add(hoveredVessel.isActiveVessel
+        ? CurrentVesselMsg.Format()
+        : SwitchToMsg.Format(MouseButtonLookup.Lookup(switchMouseButton)));
     sb.Add("");
 
     // Give a hint when distance is too long.
@@ -555,7 +722,8 @@ sealed class Controller : MonoBehaviour {
       cameraStabilizationMode = CameraStabilization.None;
     }
     ScreenMessaging.ShowPriorityScreenMessage(
-        CameraStabilizationModeChangedMsg.Format(cameraStabilizationMode));
+        CameraStabilizationModeChangedMsg.Format(
+            CameraStabilizationModeLookup.Lookup(cameraStabilizationMode)));
   }
 
   /// <summary>Shortcut to get a short vessel title.</summary>
@@ -569,7 +737,7 @@ sealed class Controller : MonoBehaviour {
           ? SinglePartTitleMsg.Format(vessel.vesselName)
           : AssemblyTitleMsg.Format(vessel.vesselName);
     }
-    return VesselTitleMsg.Format(vessel.vesselType, vessel.vesselName);
+    return VesselTitleMsg.Format(vessel.vesselType.displayDescription(), vessel.vesselName);
   }
 
   /// <summary>Verifies if KIS part is attached to the ground.</summary>
