@@ -1,3 +1,7 @@
+# 1.4 (September 17th, 2017)
+* Add localization support.
+* Add RU localization.
+
 # 1.3.0 (May 25th, 2017)
 * Update to KSP 1.3.
 
