@@ -1,22 +1,24 @@
 {
+  "JSON_SCHEMA_VERSION": "1.1",
+
   "PACKAGE_NAME": "EasyVesselSwitch",
-  "SRC" : "..",
-  "DEST" : "../Release",
-  "ARCHIVE_DEST" : "..",
+
+  "SHELL_COMPILE_BINARY_SCRIPT" : "make_binary.cmd",
+
+  "RELEASE_NAME_FREE_FORMAT" : "{PACKAGE_NAME}_v{0}.{1}",
+
   "STRUCTURE" : {
     "" : [
-      "/LICENSE.md",
-      "/README.md"
+      "/Lang",
+      "/README.md",
+      "/LICENSE.md"
     ],
     "Plugins" : [
-      "{SRC_COMPILED_BINARY}",
-      "{SRC_REPOSITORY_VERSION_FILE}",
-      "/Binaries/KSPDev_Utils*.dll",
-      "/Binaries/KSPDev_Utils_License.md",
-      "/Binaries/MiniAVC.dll"
-    ],
-    "Plugins/PluginData" : [
-      "/PluginData/*"
+      "{COMPILED_BINARY}",
+      "{MINIAVC_VERSION_FILE}",
+      "/PluginData",
+      "/Binaries/*",
+      "-*.xml"
     ]
   }
 }
