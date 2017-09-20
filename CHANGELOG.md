@@ -1,3 +1,5 @@
+# 1.5 (pre-release)
+
 # 1.4 (September 17th, 2017)
 * Add localization support.
 * Add RU localization.
