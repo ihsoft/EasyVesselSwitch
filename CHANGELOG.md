@@ -1,4 +1,4 @@
-# 1.5 (pre-release)
+# 1.5 (September 19th, 2017)
 * [Fix #11] Wrong location of the settings file.
 * [Change] Fix the location of the localization files.
 
