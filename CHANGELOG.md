@@ -1,3 +1,7 @@
+# 1.5 (September 19th, 2017)
+* [Fix #11] Wrong location of the settings file.
+* [Change] Fix the location of the localization files.
+
 # 1.4 (September 17th, 2017)
 * Add localization support.
 * Add RU localization.
