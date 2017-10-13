@@ -299,26 +299,34 @@ sealed class Controller : MonoBehaviour {
 
   /// <summary>Vessel which is currently hovered.</summary>
   Vessel hoveredVessel;
+
   /// <summary>Overaly window to show info about vessel under the mouse cursor.</summary>
   HintOverlay mouseInfoOverlay;
+
   /// <summary>Old vessel context.</summary>
   VesselInfo oldInfo;
+
   /// <summary>New vessel context.</summary>
   VesselInfo newInfo;
+
   /// <summary>Defines if currently selected vessel was a result of EVS mouse click event.</summary>
   bool evsSwitchAction;
+
   /// <summary>Event to handle in the controller.</summary>
   /// <remarks>
   /// Controller code reacts to anything different from <see cref="SwitchEvent.Idle"/>. Once the
   /// event is handled it's reset to the default.
   /// </remarks>
   SwitchEvent state = SwitchEvent.Idle;
+
   /// <summary>Specifies if hovered vessel is attached to the ground.</summary>
   /// <remarks><c>null</c> means no static attachable parts found.</remarks>
   bool? isKisStaticAttached;
+
   /// <summary>If hovered vessel is a kerbal then this will be the component.</summary>
   /// <remarks><c>null</c> means hovered vessel is not a kerbal.</remarks>
   KerbalEVA kerbalEva;
+
   /// <summary>Part that is currently hovered when EVS mode is enabled.</summary>
   /// <remarks>Used to determine part's focus change.</remarks>
   Part lastHoveredPart;
