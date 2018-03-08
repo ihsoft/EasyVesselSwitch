@@ -817,8 +817,8 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// It may put some extra loading on CPU, though.
   /// </param>
   /// <returns><c>WaitForSeconds</c>.</returns>
-  static IEnumerator TimedHighlightCoroutine(Vessel vessel, float timeout, Color color,
-                                             bool isBeingDocked = false) {
+  IEnumerator TimedHighlightCoroutine(Vessel vessel, float timeout, Color color,
+                                      bool isBeingDocked = false) {
     SetVesselHighlight(vessel, color);
     if (isBeingDocked) {
       // On dock event completion the set of vessel parts will increase. Though, there is no
@@ -846,7 +846,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <param name="newInfo">New vessel info.</param>
   /// <param name="trasitionDuration">The duration to play the transition animation.</param>
   /// <returns><c>null</c> until the animation is done or aborted.</returns>
-  static IEnumerator AnimateCameraPivotCoroutine(
+  IEnumerator AnimateCameraPivotCoroutine(
       Transform target, VesselInfo oldInfo, VesselInfo newInfo, float trasitionDuration) {
     float startTime = Time.unscaledTime;
     float progress;
@@ -878,7 +878,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <param name="newInfo">The new vessel info.</param>
   /// <param name="trasitionDuration">The duration to play the transition animation.</param>
   /// <returns><c>null</c> until the animation is done or aborted.</returns>
-  static IEnumerator AnimateCameraPositionCoroutine(
+  IEnumerator AnimateCameraPositionCoroutine(
       Transform target, VesselInfo oldInfo, VesselInfo newInfo, float trasitionDuration) {
     float startTime = Time.unscaledTime;
     float progress;
