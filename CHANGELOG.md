@@ -1,3 +1,6 @@
+# 1.6 (pre-release)
+* [Change] KSP 1.4.0 compatibility.
+
 # 1.5 (September 19th, 2017)
 * [Fix #11] Wrong location of the settings file.
 * [Change] Fix the location of the localization files.
