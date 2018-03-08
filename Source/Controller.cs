@@ -331,6 +331,17 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <summary>Part that is currently hovered when EVS mode is enabled.</summary>
   /// <remarks>Used to determine part's focus change.</remarks>
   Part lastHoveredPart;
+
+  /// <summary>Tells if the vessel highlighting logic should be presented.</summary>
+  /// <remarks><c>true</c> if the hovered or selected vessel should be highlighted.</remarks>
+  /// <remarks>
+  /// The state is determined from the <i>alpha</i> component of the highlighing color. If it's
+  /// <c>0</c>, then no visual appearance will happen anyways. So don't event trigger the logic to
+  /// not affect the part renderer states.
+  /// </remarks>
+  bool isHighlighingEnabled {
+    get { return !Mathf.Approximately(targetVesselHighlightColor.a, 0); }
+  }
   #endregion
 
   #region MonoBehaviour methods
@@ -377,8 +388,10 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       if (lastHoveredPart != null && lastHoveredPart.vessel == hoveredVessel) {
         // Let game core to disable highlighter and then restore it.
         var restoreHighlightPart = lastHoveredPart; // Make a cope for the delayed call.
-        AsyncCall.CallOnEndOfFrame(
-            this, () => restoreHighlightPart.highlighter.ConstantOn(targetVesselHighlightColor));
+        if (isHighlighingEnabled) {
+          AsyncCall.CallOnEndOfFrame(
+              this, () => restoreHighlightPart.highlighter.ConstantOn(targetVesselHighlightColor));
+        }
       }
       lastHoveredPart = Mouse.HoveredPart;
     }
@@ -777,15 +790,17 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// A color to use for highlighting. If set to <c>null</c> then vessel highlighting will be
   /// cancelled.
   /// </param>
-  static void SetVesselHighlight(Vessel vessel, Color? color) {
-    foreach (var part in vessel.parts) {
-      if (part == Mouse.HoveredPart) {
-        continue;  // KSP core highlights hovered part with own color. 
-      }
-      if (color.HasValue) {
-        part.highlighter.ConstantOn(color.Value);
-      } else {
-        part.highlighter.ConstantOff();
+  void SetVesselHighlight(Vessel vessel, Color? color) {
+    if (isHighlighingEnabled) {
+      foreach (var part in vessel.parts) {
+        if (part == Mouse.HoveredPart) {
+          continue;  // KSP core highlights hovered part with own color. 
+        }
+        if (color.HasValue) {
+          part.highlighter.ConstantOn(color.Value);
+        } else {
+          part.highlighter.ConstantOff();
+        }
       }
     }
   }
