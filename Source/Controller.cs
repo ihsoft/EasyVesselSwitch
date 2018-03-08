@@ -17,7 +17,7 @@ namespace EasyVesselSwitch {
 // Next localization ID: #evsLOC_00025.
 [KSPAddon(KSPAddon.Startup.Flight, false /*once*/)]
 [PersistentFieldsFile("EasyVesselSwitch/Plugins/PluginData/settings.cfg", "")]
-sealed class Controller : MonoBehaviour {
+sealed class Controller : MonoBehaviour, IHasGUI {
   #region Persistent fields
   /// <summary>Key to activate vessel select mode.</summary>
   [PersistentField("UI/vesselSwitchKey")]
@@ -276,6 +276,7 @@ sealed class Controller : MonoBehaviour {
       + " focus to the default vessel focus mode.");
   #endregion
 
+  #region Local methods and types
   /// <summary>A mode of camera stabilization.</summary>
   enum CameraStabilization {
     /// <summary>No stabilization. Allow dfeault KSP behavior.</summary>
@@ -330,7 +331,9 @@ sealed class Controller : MonoBehaviour {
   /// <summary>Part that is currently hovered when EVS mode is enabled.</summary>
   /// <remarks>Used to determine part's focus change.</remarks>
   Part lastHoveredPart;
+  #endregion
 
+  #region MonoBehaviour methods
   /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Registers listeners, reads configuration and creates global UI objects.</remarks>
   void Awake() {
@@ -352,17 +355,6 @@ sealed class Controller : MonoBehaviour {
     GameEvents.onVesselSwitching.Remove(OnVesselSwitch);
     GameEvents.onVesselChange.Remove(OnVesselChange);
     GameEvents.onPartCouple.Remove(OnPartCouple);
-  }
-
-  /// <summary>Overridden from MonoBehaviour.</summary>
-  /// <remarks>Persents hovered vessel info.</remarks>
-  void OnGUI() {
-    if (hoveredVessel != null) {
-      ShowHoveredVesselInfo();
-    }
-    if (partFocusSwitchKey.isHold) {
-      ShowHoveredPartInfo();
-    }
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>
@@ -414,7 +406,22 @@ sealed class Controller : MonoBehaviour {
           isBeingDocked: true));
     }
   }
+  #endregion
 
+  #region IHasGUI implementation
+  /// <summary>Overridden from MonoBehaviour.</summary>
+  /// <remarks>Persents hovered vessel info.</remarks>
+  public void OnGUI() {
+    if (hoveredVessel != null) {
+      ShowHoveredVesselInfo();
+    }
+    if (partFocusSwitchKey.isHold) {
+      ShowHoveredPartInfo();
+    }
+  }
+  #endregion
+
+  #region Local methods
   /// <summary>GameEvents callback.</summary>
   /// <remarks>
   /// Detects vessel docking events.
@@ -886,6 +893,7 @@ sealed class Controller : MonoBehaviour {
       yield return null;
     } while (progress < 1.0f && FlightCamera.fetch.Target == target);
   }
+  #endregion
 }
 
 }
