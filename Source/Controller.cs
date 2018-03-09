@@ -17,7 +17,7 @@ namespace EasyVesselSwitch {
 // Next localization ID: #evsLOC_00025.
 [KSPAddon(KSPAddon.Startup.Flight, false /*once*/)]
 [PersistentFieldsFile("EasyVesselSwitch/Plugins/PluginData/settings.cfg", "")]
-sealed class Controller : MonoBehaviour {
+sealed class Controller : MonoBehaviour, IHasGUI {
   #region Persistent fields
   /// <summary>Key to activate vessel select mode.</summary>
   [PersistentField("UI/vesselSwitchKey")]
@@ -276,6 +276,7 @@ sealed class Controller : MonoBehaviour {
       + " focus to the default vessel focus mode.");
   #endregion
 
+  #region Local methods and types
   /// <summary>A mode of camera stabilization.</summary>
   enum CameraStabilization {
     /// <summary>No stabilization. Allow dfeault KSP behavior.</summary>
@@ -299,30 +300,51 @@ sealed class Controller : MonoBehaviour {
 
   /// <summary>Vessel which is currently hovered.</summary>
   Vessel hoveredVessel;
+
   /// <summary>Overaly window to show info about vessel under the mouse cursor.</summary>
   HintOverlay mouseInfoOverlay;
+
   /// <summary>Old vessel context.</summary>
   VesselInfo oldInfo;
+
   /// <summary>New vessel context.</summary>
   VesselInfo newInfo;
+
   /// <summary>Defines if currently selected vessel was a result of EVS mouse click event.</summary>
   bool evsSwitchAction;
+
   /// <summary>Event to handle in the controller.</summary>
   /// <remarks>
   /// Controller code reacts to anything different from <see cref="SwitchEvent.Idle"/>. Once the
   /// event is handled it's reset to the default.
   /// </remarks>
   SwitchEvent state = SwitchEvent.Idle;
+
   /// <summary>Specifies if hovered vessel is attached to the ground.</summary>
   /// <remarks><c>null</c> means no static attachable parts found.</remarks>
   bool? isKisStaticAttached;
+
   /// <summary>If hovered vessel is a kerbal then this will be the component.</summary>
   /// <remarks><c>null</c> means hovered vessel is not a kerbal.</remarks>
   KerbalEVA kerbalEva;
+
   /// <summary>Part that is currently hovered when EVS mode is enabled.</summary>
   /// <remarks>Used to determine part's focus change.</remarks>
   Part lastHoveredPart;
 
+  /// <summary>Tells if the vessel highlighting logic should be presented.</summary>
+  /// <remarks><c>true</c> if the hovered or selected vessel should be highlighted.</remarks>
+  /// <remarks>
+  /// The state is determined from the <i>alpha</i> component of the highlighing color. If it's
+  /// <c>0</c>, then no visual appearance will happen anyways. So don't event trigger the logic to
+  /// not affect the part renderer states.
+  /// </remarks>
+  bool isHighlighingEnabled {
+    get { return !Mathf.Approximately(targetVesselHighlightColor.a, 0); }
+  }
+  #endregion
+
+  #region MonoBehaviour methods
   /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Registers listeners, reads configuration and creates global UI objects.</remarks>
   void Awake() {
@@ -347,17 +369,6 @@ sealed class Controller : MonoBehaviour {
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>
-  /// <remarks>Persents hovered vessel info.</remarks>
-  void OnGUI() {
-    if (hoveredVessel != null) {
-      ShowHoveredVesselInfo();
-    }
-    if (partFocusSwitchKey.isHold) {
-      ShowHoveredPartInfo();
-    }
-  }
-
-  /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Tracks keys and mouse moveement.</remarks>
   void Update() {
     switchStabilizationModeKey.Update();
@@ -377,8 +388,10 @@ sealed class Controller : MonoBehaviour {
       if (lastHoveredPart != null && lastHoveredPart.vessel == hoveredVessel) {
         // Let game core to disable highlighter and then restore it.
         var restoreHighlightPart = lastHoveredPart; // Make a cope for the delayed call.
-        AsyncCall.CallOnEndOfFrame(
-            this, () => restoreHighlightPart.highlighter.ConstantOn(targetVesselHighlightColor));
+        if (isHighlighingEnabled) {
+          AsyncCall.CallOnEndOfFrame(
+              this, () => restoreHighlightPart.highlighter.ConstantOn(targetVesselHighlightColor));
+        }
       }
       lastHoveredPart = Mouse.HoveredPart;
     }
@@ -406,7 +419,22 @@ sealed class Controller : MonoBehaviour {
           isBeingDocked: true));
     }
   }
+  #endregion
 
+  #region IHasGUI implementation
+  /// <summary>Overridden from MonoBehaviour.</summary>
+  /// <remarks>Persents hovered vessel info.</remarks>
+  public void OnGUI() {
+    if (hoveredVessel != null) {
+      ShowHoveredVesselInfo();
+    }
+    if (partFocusSwitchKey.isHold) {
+      ShowHoveredPartInfo();
+    }
+  }
+  #endregion
+
+  #region Local methods
   /// <summary>GameEvents callback.</summary>
   /// <remarks>
   /// Detects vessel docking events.
@@ -762,15 +790,17 @@ sealed class Controller : MonoBehaviour {
   /// A color to use for highlighting. If set to <c>null</c> then vessel highlighting will be
   /// cancelled.
   /// </param>
-  static void SetVesselHighlight(Vessel vessel, Color? color) {
-    foreach (var part in vessel.parts) {
-      if (part == Mouse.HoveredPart) {
-        continue;  // KSP core highlights hovered part with own color. 
-      }
-      if (color.HasValue) {
-        part.highlighter.ConstantOn(color.Value);
-      } else {
-        part.highlighter.ConstantOff();
+  void SetVesselHighlight(Vessel vessel, Color? color) {
+    if (isHighlighingEnabled) {
+      foreach (var part in vessel.parts) {
+        if (part == Mouse.HoveredPart) {
+          continue;  // KSP core highlights hovered part with own color. 
+        }
+        if (color.HasValue) {
+          part.highlighter.ConstantOn(color.Value);
+        } else {
+          part.highlighter.ConstantOff();
+        }
       }
     }
   }
@@ -802,8 +832,8 @@ sealed class Controller : MonoBehaviour {
   /// It may put some extra loading on CPU, though.
   /// </param>
   /// <returns><c>WaitForSeconds</c>.</returns>
-  static IEnumerator TimedHighlightCoroutine(Vessel vessel, float timeout, Color color,
-                                             bool isBeingDocked = false) {
+  IEnumerator TimedHighlightCoroutine(Vessel vessel, float timeout, Color color,
+                                      bool isBeingDocked = false) {
     SetVesselHighlight(vessel, color);
     if (isBeingDocked) {
       // On dock event completion the set of vessel parts will increase. Though, there is no
@@ -831,7 +861,7 @@ sealed class Controller : MonoBehaviour {
   /// <param name="newInfo">New vessel info.</param>
   /// <param name="trasitionDuration">The duration to play the transition animation.</param>
   /// <returns><c>null</c> until the animation is done or aborted.</returns>
-  static IEnumerator AnimateCameraPivotCoroutine(
+  IEnumerator AnimateCameraPivotCoroutine(
       Transform target, VesselInfo oldInfo, VesselInfo newInfo, float trasitionDuration) {
     float startTime = Time.unscaledTime;
     float progress;
@@ -863,7 +893,7 @@ sealed class Controller : MonoBehaviour {
   /// <param name="newInfo">The new vessel info.</param>
   /// <param name="trasitionDuration">The duration to play the transition animation.</param>
   /// <returns><c>null</c> until the animation is done or aborted.</returns>
-  static IEnumerator AnimateCameraPositionCoroutine(
+  IEnumerator AnimateCameraPositionCoroutine(
       Transform target, VesselInfo oldInfo, VesselInfo newInfo, float trasitionDuration) {
     float startTime = Time.unscaledTime;
     float progress;
@@ -878,6 +908,7 @@ sealed class Controller : MonoBehaviour {
       yield return null;
     } while (progress < 1.0f && FlightCamera.fetch.Target == target);
   }
+  #endregion
 }
 
 }

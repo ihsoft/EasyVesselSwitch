@@ -23,12 +23,12 @@ A mod for [Kerbal Space Program](http://www.kerbalspaceprogram.com/).
 * Almost anything can be configured via settings file that's located at:
   `EasyVesselSwitch\Plugins\PluginData\settings.cfg`.
 
-#Forum
+# Forum
 
 See how to install the mod, ask questions and propose suggestions on
 [the forum](http://forum.kerbalspaceprogram.com/index.php?/topic/141180-12-easy-vessel-switch-evs-v120/).
 
-#Development
+# Development
 
 To start your local building envirtonment read [BUILD.md](https://github.com/ihsoft/EasyVesselSwitch/blob/master/BUILD.md).
 
