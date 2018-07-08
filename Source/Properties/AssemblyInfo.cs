@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle ("EasyVesselSwitch")]
-[assembly: AssemblyDescription ("Easy Vessel Switch for Kerbal Space Program by IgorZ")]
+[assembly: AssemblyDescription ("Easy Vessel Switch for Kerbal Space Program")]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("IH Soft")]
 [assembly: AssemblyProduct ("EVS")]
