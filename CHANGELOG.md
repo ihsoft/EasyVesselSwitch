@@ -1,3 +1,5 @@
+# 1.7 (pre-release)
+
 # 1.6 (March 7th, 2018)
 * [Change] KSP 1.4.0 compatibility.
 * [Change] Completely disable the highlighting logic if the alpha component of the highlight color is 0.
