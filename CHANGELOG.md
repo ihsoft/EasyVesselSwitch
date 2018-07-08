@@ -1,5 +1,7 @@
 # 1.7 (pre-release)
 * [Change] Upgrade KSPDev Utils to 0.36.0.
+* [Enhancement] Add Italian localization (IT_it).
+* [Enhancement] Add Espaniol localization (ES_es).
 
 # 1.6 (March 7th, 2018)
 * [Change] KSP 1.4.0 compatibility.
