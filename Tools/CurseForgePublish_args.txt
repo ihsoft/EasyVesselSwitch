@@ -1,5 +1,5 @@
 --project=245805
---token=aa7eead1-acf6-4d4f-98c6-d6faeb1297e7
+--token=<<SECRET>>
 --changelog=../CHANGELOG.md
 --versions=1\.4\.
 --title=EVS {tag}
