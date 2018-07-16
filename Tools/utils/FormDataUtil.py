@@ -1,6 +1,8 @@
 # Public domain license.
 # Author: igor.zavoychinskiy@gmail.com
 # GitHub: https://github.com/ihsoft/KSPDev_ReleaseBuilder
+# $version: 1
+# $date: 07/12/2018
 
 """Provides helpers to deal with the multipart/form-data MIME types."""
 import io
@@ -50,11 +52,12 @@ def EncodeFormData(fields):
       filename = ntpath.basename(filename)
     else:
       data = field['data']
-      if type(data) is not str:
+      if type(data) not in (str, unicode):
         content_type = 'application/json'
         data = json.dumps(data)
       else:
-        content_type = 'text/plain'
+        content_type = 'text/plain; charset=utf-8'
+        data = data.encode('utf-8')
     _WriteFormData(data_stream, boundry,
                    field['name'], content_type, data, filename)
 

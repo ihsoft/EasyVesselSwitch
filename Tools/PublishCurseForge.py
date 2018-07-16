@@ -1,8 +1,10 @@
 # Public domain license.
 # Author: igor.zavoychinskiy@gmail.com
 # GitHub: https://github.com/ihsoft/KSPDev_ReleaseBuilder
+# $version: 1
+# $date: 07/14/2018
 
-""" Script to publish relases to Kerbal CurseForge.
+""" Script to publish releases to Kerbal CurseForge.
 
 First of all you have to obtain the API token. It will authorize the requests.
 Once you have it, define how you'd like the target release be created.
@@ -36,7 +38,7 @@ version suffix. E.g. if the name was "my_mod_v1.5.zip", then the tag will be
 "v1.5".
 
 HINT. Passing all the arguments via the command line may be not convinient.
-Not to mention the quoutes and back slashes issues. To avoid all this burden,
+Not to mention the quotes and back slashes issues. To avoid all this burden,
 simple put all the options into a text file and provide it to the script:
 
   $ PublishCurseForge.py @my_params.txt
@@ -61,15 +63,31 @@ allow deleting the relases. Regardless to how bad was your attempt, it will
 stay in the history forever (but you can archive it).
 """
 import argparse
+import atexit
 import os.path
+import logging
+import logging.config
 import re
 import sys
 import textwrap
 
-import CurseForgeClient
+from clients import CurseForgeClient
+
+
+LOGGER = logging.getLogger()
 
 
 def main(argv):
+  global LOGGER
+
+  if os.path.isfile('logging.conf'):
+    logging.config.fileConfig('logging.conf')
+    atexit.register(_Shutdown)
+    LOGGER = logging.getLogger('publishApp')
+  else:
+    print 'Log config not found: logging.conf'
+
+  LOGGER.info('Staring new CurseForge session...')
 
   parser = argparse.ArgumentParser(
       description='Publishes the release to a Kerbal CurseForge project.',
@@ -82,7 +100,7 @@ def main(argv):
   parser.add_argument(
       '--project', action='store', metavar='<project ID>', required=True,
       help='''the ID of the project to publish to. To get it, go to the project
-          overview in CurseForge.''')
+          overview on CurseForge.''')
   parser.add_argument(
       '--token', action='store', metavar='<API token>', required=True,
       help='''the token to authorize in API. To obtain this token go to the
@@ -94,39 +112,60 @@ def main(argv):
           the first empty line are taken. The description is expected to use
           the 'markdown' syntax.''')
   parser.add_argument(
-      '--versions', action='store', metavar='<regexp>', required=True,
-      help='''the pattern to match the target KSP versions''')
-  parser.add_argument(
       '--archive', action='store', metavar='<file path>', required=True,
       help='''the archive file to publish.''')
-  parser.add_argument(
-      '--changelog_breaker', action='store', metavar='<regexp>',
-      default=r'^\s*$',
-      help='''the RegExp to detect the end of the release description in the
-          CHANGELOG. This expression is applied per the file line.
-          Default: "^\s*$".''')
-  parser.add_argument(
-      '--tag_extract', action='store', metavar='<regexp>', default='.+?_(v.+?)\\.zip',
-      help='''the RegExp to extract the version tag from the archive name.
-          Default: ".+?_(v.+?)\.zip"''')
   parser.add_argument(
       '--title', action='store', metavar='<pattern>',
       help='''the pattern to build the release name. Use placeholder {tag} for
           the version tag. If omitted, then the file name is used as the one.
           Example: "NewName_{tag}".''')
+  parser.add_argument(
+      '--versions', action='store',
+      metavar='<"latest" | "latest_all_builds" | regexp>',
+      default='latest_all_builds',
+      help='''the pattern to match the target KSP versions. If "latest" is
+         specified, then a single version is used - the most recent one. If
+         "latest_all_builds" is specified, then all builds of the latest
+         version are used (e.g. "1.4.*"). [Default: %(default)s]''')
+  parser.add_argument(
+      '--changelog_breaker', action='store', metavar='<regexp>',
+      default=r'^\s*$',
+      help='''the RegExp to detect the end of the release description in the
+          CHANGELOG. This expression is applied per the file line.
+          [Default: %(default)s]''')
+  parser.add_argument(
+      '--tag_extract', action='store', metavar='<regexp>',
+      default='.+?_(v.+?)\\.zip',
+      help='''the RegExp to extract the version tag from the archive name.
+          [Default: %(default)s]''')
   opts = vars(parser.parse_args(argv[1:]))
 
-  # Init CurseForge
-  CurseForgeClient.PROJECT_ID = opts['project']
-  CurseForgeClient.CURSE_API_TOKEN = opts['token']
+  project_id = opts['project']
+
+  # Init CurseForge client.
+  CurseForgeClient.API_TOKEN = opts['token']
 
   versions_re = opts['versions']
-  versions = map(
-      lambda x: x['name'],
-      CurseForgeClient.GetKSPVersions(pattern=versions_re))
-  if not versions:
-    print 'ERROR: No versions found for RegExp: %s' % versions_re
-    exit(-1)
+  if versions_re == 'latest' or versions_re == 'latest_all_builds':
+    game_versions = sorted(
+        CurseForgeClient.GetKSPVersions(), key=lambda x: x['id'], reverse=True)
+    if not game_versions:
+      print 'ERROR: No versions found!'
+      exit(-1)
+    game_versions = map(lambda x: x['name'], game_versions)
+    if versions_re == 'latest':
+      game_versions = game_versions[0:1]
+    else:
+      prefix = re.match(r'^(.+?\..+?\.).*$', game_versions[0]).group(1)
+      game_versions = filter(lambda x: x.startswith(prefix), game_versions)
+  else:
+    game_versions = map(
+        lambda x: x['name'],
+        CurseForgeClient.GetKSPVersions(pattern=versions_re))
+    if not game_versions:
+      print 'ERROR: No versions found for RegExp: %s' % versions_re
+      exit(-1)
+
   desc = _ExtractDescription(opts['changelog'], opts['changelog_breaker'])
   filename = opts['archive']
 
@@ -143,30 +182,41 @@ def main(argv):
   else:
     title = os.path.splitext(os.path.basename(filename))[0]
 
+
   if not os.path.isfile(filename):
     print 'ERROR: Cannot find archive: %s' % filename
     exit(-1)
+
+  project_details = CurseForgeClient.GetProjectDetails(project_id)
 
   # Verify the user's choice...
   print '======> BEGIN CHANGELOG:'
   print desc
   print '======> END CHANGELOG:'
   print
+  print 'Project name: %s (#%s)' % (project_details['title'], project_id)
   print 'Upload file:', os.path.abspath(filename)
   print 'Name release as:', title
-  print 'Add for versions:', ', '.join(versions)
+  print 'Add for versions:', ', '.join(game_versions)
   sys.stdout.write('\nContinue? [y/N]: ')
   choice = raw_input().lower()
   if choice != 'y' and choice != 'Y':
+    LOGGER.info('ABORTED BY USER!')
     print 'ABORTED!'
     exit(-1)
 
   print 'Publishing the release...'
   CurseForgeClient.UploadFile(
-      filename, desc, versions_re,
+      project_id, filename, desc, game_versions,
       title=title, release_type='release')
   print 'DONE!'
   print 'Watch for the verification status on CurseForge.'
+
+
+def _Shutdown():
+  """Finilizes the logging system."""
+  LOGGER.info('Ending CurseForge session...')
+  logging.shutdown()
 
 
 def _ExtractDescription(changelog_file, breaker_re):
