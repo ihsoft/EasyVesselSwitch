@@ -1,6 +1,6 @@
 --project=245805
 --token=<<SECRET>>
 --changelog=../CHANGELOG.md
---versions=1\.4\.
+--versions=latest_all_builds
 --title=EVS {tag}
 --archive=../EasyVesselSwitch_v1.8.zip

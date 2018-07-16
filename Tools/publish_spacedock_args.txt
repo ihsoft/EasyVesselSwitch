@@ -1,0 +1,5 @@
+--project=1906
+--login=<<SECRET>>
+--changelog=../CHANGELOG.md
+--ksp_version=latest
+--archive=../EasyVesselSwitch_v1.8.zip

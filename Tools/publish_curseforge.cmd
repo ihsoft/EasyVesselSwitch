@@ -1,2 +1,2 @@
 @echo off
-PublishCurseForge.py @CurseForgePublish_args.txt
+PublishCurseForge.py @publish_curseforge_args.txt
