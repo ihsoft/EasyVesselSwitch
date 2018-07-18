@@ -1,0 +1,7 @@
+--user=ihsoft
+--repo=EasyVesselSwitch
+--token=<<SECRET>>
+--changelog=../CHANGELOG.md
+--as_draft
+--title=EVS v{tag}
+--archive=../EasyVesselSwitch_v1.8.zip
