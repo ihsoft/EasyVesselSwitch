@@ -1,3 +1,6 @@
+# 1.9 (October 16th, 2018)
+* [Change] KSP 1.5 compatibility.
+
 # 1.8 (July 11th, 2018)
 * [Change] Upgrade KSPDev Utils to 0.37.0. Stability fix.
 

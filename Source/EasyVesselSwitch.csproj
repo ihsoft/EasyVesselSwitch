@@ -51,28 +51,28 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>Q:\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>Q:\KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>Q:\KSP_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>Q:\KSP_x64_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="KSPDev_Utils.0.37">
       <HintPath>..\Binaries\KSPDev_Utils.0.37.dll</HintPath>
     </Reference>
     <Reference Include="System">
-      <HintPath>Q:\KSP_Data\Managed\System.dll</HintPath>
+      <HintPath>Q:\KSP_x64_Data\Managed\System.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core">
-      <HintPath>Q:\KSP_Data\Managed\System.Core.dll</HintPath>
+      <HintPath>Q:\KSP_x64_Data\Managed\System.Core.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>Q:\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>Q:\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>Q:\KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>Q:\KSP_x64_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
