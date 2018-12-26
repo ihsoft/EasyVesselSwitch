@@ -3,4 +3,4 @@
 --changelog=../CHANGELOG.md
 --versions=latest_all_builds
 --title=EVS {tag}
---archive=../EasyVesselSwitch_v1.9.zip
+--archive=../EasyVesselSwitch_v1.10.zip
