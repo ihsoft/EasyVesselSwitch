@@ -4,6 +4,7 @@
 
 using KSPDev.ConfigUtils;
 using KSPDev.GUIUtils;
+using KSPDev.GUIUtils.TypeFormatters;
 using KSPDev.InputUtils;
 using KSPDev.ProcessingUtils;
 using System;
