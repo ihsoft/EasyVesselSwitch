@@ -35,7 +35,7 @@ If you want doing EVA comfortably, you really should consider adding these mods 
 
 * [Kerbal Inventory System (KIS)](https://forum.kerbalspaceprogram.com/index.php?/topic/149848-14-kerbal-inventory-system-kis-v114/). Now you can build and upgrade vessels in EVA!
 * [Kerbal Attachment System (KAS)](https://github.com/ihsoft/KAS). Need to link two vessels? Just send out your kerbals EVA! Don't forget to update their inventories, though.
-* [Surface Mounted Lights](https://forum.kerbalspaceprogram.com/index.php?/topic/139724-15-surface-mounted-lights-v19/). Too dark for EVA on the other side of the moon? Problem solved with these ambient lights!
+* [Surface Mounted Lights](https://github.com/ihsoft/SurfaceLights). Too dark for EVA on the other side of the moon? Problem solved with these ambient lights!
 
 # How to install
 
