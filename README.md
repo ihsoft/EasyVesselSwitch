@@ -34,15 +34,25 @@ You can support this and the other of my mods on [Patreon](https://www.patreon.c
 If you want doing EVA comfortably, you really should consider adding these mods as well:
 
 * [Kerbal Inventory System (KIS)](https://forum.kerbalspaceprogram.com/index.php?/topic/149848-14-kerbal-inventory-system-kis-v114/). Now you can build and upgrade vessels in EVA!
-* [Kerbal Attachment System (KAS)](https://forum.kerbalspaceprogram.com/index.php?/topic/142594-15-kerbal-attachment-system-kas-v10/). Need to link two vessels? Just send out your kerbals EVA! Don't forget to update their inventories, though.
+* [Kerbal Attachment System (KAS)](https://github.com/ihsoft/KAS). Need to link two vessels? Just send out your kerbals EVA! Don't forget to update their inventories, though.
 * [Surface Mounted Lights](https://forum.kerbalspaceprogram.com/index.php?/topic/139724-15-surface-mounted-lights-v19/). Too dark for EVA on the other side of the moon? Problem solved with these ambient lights!
 
 # How to install
 
-* Download the ZIP archive.
-* Unzip release archive into the game's `GameData` folder.
-* Verify the installation: the mod's `README.md` file must be located at `<game root>/GameData/EasyVesselSwitch/README.md`.
-* Note, that all the names must be __exactly__ like in the archive or it __won't work__.
+* _Recommended_:
+  * Install and run [CKAN](https://github.com/KSP-CKAN/CKAN/releases).
+  * Search for "Easy Vessel Switch" or just "EVS", then install the mod.
+  * Occasionally run CKAN client to update EVS (and other mods) to the latest version.
+  * If you follow this path, then all the EVS dependencies will be updated _automatically_. It may save you a lot of time during the update.
+* Manual:
+  * Download the ZIP archive:
+    * From [CurseForge](https://kerbal.curseforge.com/projects/easy-vessel-switch-evs/files).
+    * From [Spacedock](https://spacedock.info/mod/1906/Easy%20Vessel%20Switch).
+    * From [GitHub](https://github.com/ihsoft/EasyVesselSwitch/releases).
+  * If you have an older version of the mod in your game, you __must__ delete all the old files first! __Do not just copy over__, this will likely result in compatibility issues.
+  * Unzip the release archive into the game's `GameData` folder.
+    * Note, that names of the folders __must__ be exactly like in the archive or the mod __won't work__.
+  * Verify the installation: the mod's `LICENSE.md` file must be located at `<game root>/GameData/EVS/LICENSE.md`.
 
 # Forum
 
