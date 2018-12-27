@@ -1,6 +1,6 @@
-#Prerequisites
+# Prerequisites
 
-##For building
+## For building
 
 * Get C# runtime of version 4.0 or higher.
 * Create a virtual drive pointing to KSP installation: `subst q: <path to KSP root>`.
@@ -10,13 +10,13 @@
     actions.
 * Clone [Github repository](https://github.com/ihsoft/EasyVesselSwitch).
 
-##For making releases
+## For making releases
 
 * Python 2.7 or greater.
 * Owner or collaborator permissions in [Github repository](https://github.com/ihsoft/EasyVesselSwitch).
 * Owner or maintainer permissions on [Curseforge project](http://kerbal.curseforge.com/projects/easy-vessel-switch-evs).
 
-##For development
+## For development
 
 You may work with the project from the following IDEs:
 
@@ -26,7 +26,7 @@ You may work with the project from the following IDEs:
 * [Visual Studio Express](https://www.visualstudio.com/en-US/products/visual-studio-express-vs).
   It should work but was not tested.
 
-#Versioning explained
+# Versioning explained
 
 Version number consists of three numbers - X.Y.Z:
 * X - MAJOR. A really huge change is required to affect this number. Like releasing a first version:
@@ -35,13 +35,13 @@ Version number consists of three numbers - X.Y.Z:
   of changes.
 * Z - PATCH. Bugfixes, small feature requests, and internal cleanup changes.
 
-#Building
+# Building
 
 * Review file `Tools\make_binary.cmd` and ensure the path to `MSBuild` is right.
 * Run `Tools\make_binary.cmd` having folder `Tools` as current.
 * Given there were no compile errors the new DLL file can be found in `.\Source\bin\Release\`.
 
-#Releasing
+# Releasing
 
 * Review file `Tools\make_binary.cmd` and ensure the path to `MSBuild` is right.
 * Review file `Tools\make_release.py` and ensure `ZIP_BINARY` points to a ZIP compatible command
@@ -67,7 +67,7 @@ Version number consists of three numbers - X.Y.Z:
   - Copy/paste changes from Github relase page: this way links to the issues will be preserved.
   - Once verified the package will become available for downloading.
 * EVS is listed on [KSP-CKAN](http://forum.kerbalspaceprogram.com/index.php?/topic/90246-the-comprehensive-kerbal-archive-network-ckan-package-manager-v1180-19-june-2016/).
-  It should pick up new reelase automatically.
+  It should pick up new release automatically.
   - Release package needs to be verified on Curse in order to be recognized by CKAN.
   - CKAN updates daily. It may require up to 24 hours for the databse to update.
   - If new version doesn't show up in CKAN after 24 hours escalate it via a CKAN's issue on Github.
