@@ -18,7 +18,8 @@
       "{MINIAVC_VERSION_FILE}",
       "/PluginData",
       "/Binaries/*",
-      "-*.xml"
+      "-*.xml",
+      "-KSP-AVC.version"
     ]
   }
 }
