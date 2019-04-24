@@ -1,4 +1,5 @@
-# 1.11 (pre-release)
+# 1.11 (April 23rd, 2019)
+* [Change] KSP 1.7 compatibility.
 
 # 1.10 (December 25th, 2018)
 * [Change] KSP 1.6 compatibility.
