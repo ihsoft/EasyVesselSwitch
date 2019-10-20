@@ -1,3 +1,7 @@
+# Purpose of the fork
+
+Work on french translation
+
 # Easy Vessel Switch (EVS)
 
 The stock game doesn't care much about the camera stabilization when you switch between the vessels. You can walk in EVA, enter a pod, and end up with a camera looking in the sky. Or you may want to take a closer look at some part of your big station, but the camera focus is
