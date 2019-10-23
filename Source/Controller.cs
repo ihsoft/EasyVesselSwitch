@@ -206,7 +206,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       "#evsLOC_00016",
       defaultTemplate: "Vessel is NOT attached to the ground",
       description: "The message to display in the hover menu to tell that the vessel is NOT"
-      + "attached to the ground via the KIS mod part(s).");
+      + " attached to the ground via the KIS mod part(s).");
 
   static readonly Message CurrenPartInFocusStatusMsg = new Message(
       "#evsLOC_00017",
@@ -256,7 +256,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       defaultTemplate: "Click [<<1>>] to reset the focus to the current vessel.",
       description: "The hint message to display in the hover menu to tell what to do to reset the"
       + " part's focus back to the vessel focus mode."
-      + "\nArgument <<1>> is the localized name of the mosue button event (e.g. \"LMB\").");
+      + "\nArgument <<1>> is the localized name of the mouse button event (e.g. \"LMB\").");
 
   static readonly Message AnotherPartFocusHintMsg = new Message(
       "#evsLOC_00022",
