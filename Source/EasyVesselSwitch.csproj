@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>EasyVesselSwitch</RootNamespace>
     <AssemblyName>EasyVesselSwitch</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <TargetFrameworkProfile />
     <NoWin32Manifest>False</NoWin32Manifest>
@@ -56,9 +56,10 @@
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>Q:\KSP_x64_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="KSPDev_Utils.1.2">
-      <HintPath>..\Binaries\KSPDev_Utils.1.2.dll</HintPath>
+    <Reference Include="KSPDev_Utils.2.0">
+      <HintPath>..\Binaries\KSPDev_Utils.2.0.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <HintPath>Q:\KSP_x64_Data\Managed\System.dll</HintPath>
@@ -67,9 +68,8 @@
     <Reference Include="System.Core">
       <HintPath>Q:\KSP_x64_Data\Managed\System.Core.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>Q:\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>Q:\KSP_x64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>Q:\KSP_x64_Data\Managed\UnityEngine.UI.dll</HintPath>
