@@ -1,4 +1,4 @@
-# Easy Vessel Switch (EVS)
+﻿# Easy Vessel Switch (EVS)
 
 The stock game doesn't care much about the camera stabilization when you switch between the vessels. You can walk in EVA, enter a pod, and end up with a camera looking in the sky. Or you may want to take a closer look at some part of your big station, but the camera focus is
 bound to the station's center of mass, and the part of the interest is far away form it.
@@ -19,11 +19,15 @@ And this mod speaks 4 major languages in case of some of your kerbals are picky 
 
 # Languages supported
 
-![Русский](https://github.com/ihsoft/EasyVesselSwitch/raw/WikiContent/WikiImages/Russian-small-flag.png) Русский
+![Русский](https://github.com/ihsoft/EasyVesselSwitch/raw/master/WikiImages/Russian-small-flag.png) Русский
 
-![Italiano](https://github.com/ihsoft/EasyVesselSwitch/raw/WikiContent/WikiImages/Italian-small-flag.png) Italiano
+![Italiano](https://github.com/ihsoft/EasyVesselSwitch/raw/master/WikiImages/Italian-small-flag.png) Italiano
 
-![Español](https://github.com/ihsoft/EasyVesselSwitch/raw/WikiContent/WikiImages/Spanish-small-flag.png) Español
+![Español](https://github.com/ihsoft/EasyVesselSwitch/raw/master/WikiImages/Spanish-small-flag.png) Español
+
+![简体中文](https://github.com/ihsoft/EasyVesselSwitch/raw/master/WikiImages/Chineese-small-flag.png) 简体中文
+
+![Français](https://github.com/ihsoft/EasyVesselSwitch/raw/master/WikiImages/French-small-flag.png) Français
 
 # Support
 

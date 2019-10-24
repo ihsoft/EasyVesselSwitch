@@ -2,4 +2,4 @@
 --login=<<SECRET>>
 --changelog=../CHANGELOG.md
 --ksp_version=latest
---archive=../EasyVesselSwitch_v1.11.zip
+--archive=../EasyVesselSwitch_v2.0.zip
