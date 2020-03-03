@@ -1,3 +1,8 @@
+# 2.1 (March, 3rd, 2020)
+* [Change] Switch to C# compiler v6.0.
+* [Change] Set maximum KSP version to `1.99` due to now Squad team increases the minor part on _any_ release, except a bugfix one (and it's the right way to treat versions!).
+* [Enhancement] Fixing typos in the default localization strings descriptions.
+
 # 2.0 (October 10th, 2019)
 * [Change] KSP 1.8 compatibility. __WARNING__ Mod versions of `v2.0` and higher are not compatible to KSP versions prior to `1.8`!
 * [Change] Upgrade to `C# .Net 4.5`.
