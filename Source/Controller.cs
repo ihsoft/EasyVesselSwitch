@@ -186,13 +186,13 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   static readonly Message<string> CameraStabilizationModeChangedMsg = new Message<string>(
       "#evsLOC_00013",
       defaultTemplate: "Stabilization mode: <<1>>",
-      description: "The mesage to present when the EVS mode has changed or updated."
-      + "\nArgumnent <<1>> is a localized description of the mode.");
+      description: "The message to present when the EVS mode has changed or updated."
+      + "\nArgument <<1>> is a localized description of the mode.");
 
   static readonly Message<DistanceType> DistantVesselTargetedMsg = new Message<DistanceType>(
       "#evsLOC_00014",
       defaultTemplate: "Vessel is too distant: <<1>>",
-      description: "The message to display in the hover menu when the vessel, being hoverd, is too"
+      description: "The message to display in the hover menu when the vessel, being hovered, is too"
       + " far to switch to it."
       + "\nArgument <<1>> is the vessel's name.");
 
@@ -208,7 +208,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       description: "The message to display in the hover menu to tell that the vessel is NOT"
       + " attached to the ground via the KIS mod part(s).");
 
-  static readonly Message CurrenPartInFocusStatusMsg = new Message(
+  static readonly Message CurrentPartInFocusStatusMsg = new Message(
       "#evsLOC_00017",
       defaultTemplate: "This part is currently in focus.",
       description: "The status message in the hover menu when the player enables the part's focus"
@@ -248,8 +248,8 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       "#evsLOC_00020",
       defaultTemplate: "Click [<<1>>] to set the focus on this part.",
       description: "The hint message to display in the hover menu to tell what to do to set the"
-      + " focus on the hoverd part."
-      + "\nArgument <<1>> is the localized name of the mosue button event (e.g. \"LMB\").");
+      + " focus on the hovered part."
+      + "\nArgument <<1>> is the localized name of the mouse button event (e.g. \"LMB\").");
 
   static readonly Message<string> ResetFocusToCurrentVesselHintMsg = new Message<string>(
       "#evsLOC_00021",
@@ -262,7 +262,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       "#evsLOC_00022",
       defaultTemplate: "Hover over another part to change the focus.",
       description: "The hint message to display in the hover menu when the part's focus mode is"
-      + " enabled, but the cirrently hovered part is already in focus.");
+      + " enabled, but the currently hovered part is already in focus.");
 
   static readonly Message SomePartFocusHintMsg = new Message(
       "#evsLOC_00023",
@@ -280,7 +280,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   #region Local methods and types
   /// <summary>A mode of camera stabilization.</summary>
   enum CameraStabilization {
-    /// <summary>No stabilization. Allow dfeault KSP behavior.</summary>
+    /// <summary>No stabilization. Allow default KSP behavior.</summary>
     None = 0,
     /// <summary>Keep camera at the same position and move focus to the new vessel.</summary>
     KeepPosition = 1,
