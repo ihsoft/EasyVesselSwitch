@@ -387,12 +387,18 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Tracks keys and mouse moveement.</remarks>
   void Update() {
-    switchStabilizationModeKey.Update();
-    if (vesselSwitchKey.Update()) {
-      HandleVesselSelection();
-    }
-    if (partFocusSwitchKey.Update()) {
-      HandleCameraFocusSelection();
+    if (!EVAConstructionModeController.Instance.IsOpen) {
+      switchStabilizationModeKey.Update();
+      if (vesselSwitchKey.Update()) {
+        HandleVesselSelection();
+      }
+      if (partFocusSwitchKey.Update()) {
+        HandleCameraFocusSelection();
+      }
+    } else {
+      if (_hoveredVessel != null) {
+        SetHoveredVessel(null);
+      }
     }
 
     // Core KSP logic highlights hovered parts. Once focus is lost so does the highlight state on
