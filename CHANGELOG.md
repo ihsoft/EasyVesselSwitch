@@ -1,3 +1,5 @@
+# 2.2 (pre-release)
+
 # 2.1 (March, 3rd, 2020)
 * [Change] Switch to C# compiler v6.0.
 * [Change] Set maximum KSP version to `1.99` due to now Squad team increases the minor part on _any_ release, except a bugfix one (and it's the right way to treat versions!).
