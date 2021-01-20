@@ -84,4 +84,10 @@
     <PostBuildEvent>IF EXIST "Q:\GameData" xcopy "$(TargetPath)" "Q:\GameData\EasyVesselSwitch\Plugins\" /Y
 IF EXIST "Q:\GameData" xcopy "$(TargetDir)KSPDev_Utils*.dll" "Q:\GameData\EasyVesselSwitch\Plugins\" /Y</PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
 </Project>
