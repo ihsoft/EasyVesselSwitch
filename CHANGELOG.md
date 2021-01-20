@@ -1,3 +1,11 @@
+# 2.2 (Jaunary 19th, 2021)
+* [Change] Switch to KSP 1.11. There is no backwards compatibility!
+* [Change] Drop the old `MiniAVC` in favor of `MiniAVC-V2`.
+* [Enhancement] Some fixes in French localization.
+* [Fix #33] Allow to disable the vessel overlay.
+* [Fix #34] Conflict with stock building system.
+* [Fix #35] Expose stabilization mode in API.
+
 # 2.1 (March, 3rd, 2020)
 * [Change] Switch to C# compiler v6.0.
 * [Change] Set maximum KSP version to `1.99` due to now Squad team increases the minor part on _any_ release, except a bugfix one (and it's the right way to treat versions!).

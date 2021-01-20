@@ -3,7 +3,7 @@
     "DOWNLOAD": "http://kerbal.curseforge.com/projects/easy-vessel-switch-evs", 
     "KSP_VERSION": {
         "MAJOR": 1, 
-        "MINOR": 9
+        "MINOR": 11
     }, 
     "KSP_VERSION_MAX": {
         "MAJOR": 1, 
@@ -11,14 +11,14 @@
     }, 
     "KSP_VERSION_MIN": {
         "MAJOR": 1, 
-        "MINOR": 8
+        "MINOR": 11
     }, 
     "NAME": "Easy Vessel Switch", 
     "URL": "https://raw.githubusercontent.com/ihsoft/EasyVesselSwitch/master/EasyVesselSwitch.version", 
     "VERSION": {
-        "BUILD": 39779, 
+        "BUILD": 40431, 
         "MAJOR": 2, 
-        "MINOR": 1, 
-        "PATCH": 7366
+        "MINOR": 2, 
+        "PATCH": 7689
     }
 }
