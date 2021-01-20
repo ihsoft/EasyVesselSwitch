@@ -1,6 +1,7 @@
 --project=245805
 --token=<<SECRET>>
 --changelog=../CHANGELOG.md
+--github=ihsoft/EasyVesselSwitch
 --versions=latest_all_builds
 --title=EVS {tag}
 --archive=../EasyVesselSwitch_v2.1.zip

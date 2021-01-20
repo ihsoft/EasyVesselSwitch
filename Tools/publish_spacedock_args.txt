@@ -1,5 +1,6 @@
 --project=1906
 --login=<<SECRET>>
 --changelog=../CHANGELOG.md
+--github=ihsoft/EasyVesselSwitch
 --ksp_version=latest
 --archive=../EasyVesselSwitch_v2.1.zip
