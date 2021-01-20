@@ -1,4 +1,5 @@
 # 2.2 (pre-release)
+* [Change] Switch to KSP 1.11. There is no backwards compatibility!
 * [Enhancement] Some fixes in French localization.
 * [Fix #33] Allow to disable the vessel overlay.
 * [Fix #34] Conflict with stock building system.
