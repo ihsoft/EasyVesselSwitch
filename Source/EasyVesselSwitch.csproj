@@ -56,8 +56,8 @@
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>Q:\KSP_x64_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
-    <Reference Include="KSPDev_Utils.2.0">
-      <HintPath>..\Binaries\KSPDev_Utils.2.0.dll</HintPath>
+    <Reference Include="KSPDev_Utils.2.4, Version=2.4.7504.27510, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\Binaries\KSPDev_Utils.2.4.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <HintPath>Q:\KSP_x64_Data\Managed\System.dll</HintPath>
