@@ -1,4 +1,5 @@
 # 2.2 (pre-release)
+* [Enhancement] Some fixes in French localization.
 
 # 2.1 (March, 3rd, 2020)
 * [Change] Switch to C# compiler v6.0.
