@@ -277,9 +277,9 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       + " focus to the default vessel focus mode.");
   #endregion
 
-  #region Local methods and types
+  #region API types and methods
   /// <summary>A mode of camera stabilization.</summary>
-  enum CameraStabilization {
+  public enum CameraStabilization {
     /// <summary>No stabilization. Allow default KSP behavior.</summary>
     None = 0,
     /// <summary>Keep camera at the same position and move focus to the new vessel.</summary>
@@ -288,6 +288,20 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     KeepDistanceAndRotation = 2,
   }
 
+  /// <summary>Currently selected mode.</summary>
+  /// <remarks>The setting is persistent and will stay between scene and game loads.</remarks>
+  public CameraStabilization currentCameraStabilization => cameraStabilizationMode;
+
+  /// <summary>Tells if the camera will be stabilized on switch.</summary>
+  /// <remarks>
+  /// Setting this property to <code>false</code> has the same effect as setting
+  /// <see cref="currentCameraStabilization"/> to <code>CameraStabilization.None</code>. However, this change is not
+  /// persisted and will be reset on scene load.
+  /// </remarks>
+  public bool isCameraStabilizationEnabled = true;
+  #endregion
+
+  #region Local methods and types
   /// <summary>Type of switch event pending.</summary>
   enum SwitchEvent {
     /// <summary>No event pending.</summary>
@@ -610,6 +624,9 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// new vessel or keeps vessel-to-camera rotation.
   /// </remarks>
   void StabilizeCamera() {
+    if (!isCameraStabilizationEnabled) {
+      return;
+    }
     var camera = FlightCamera.fetch;
 
     if (cameraStabilizationMode == CameraStabilization.KeepDistanceAndRotation) {
