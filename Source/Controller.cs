@@ -7,7 +7,6 @@ using KSPDev.GUIUtils;
 using KSPDev.GUIUtils.TypeFormatters;
 using KSPDev.InputUtils;
 using KSPDev.ProcessingUtils;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -385,7 +384,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>
-  /// <remarks>Tracks keys and mouse moveement.</remarks>
+  /// <remarks>Tracks keys and mouse movement.</remarks>
   void Update() {
     if (!EVAConstructionModeController.Instance.IsOpen) {
       switchStabilizationModeKey.Update();
