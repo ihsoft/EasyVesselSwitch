@@ -1,4 +1,4 @@
-# 2.2 (pre-release)
+# 2.2 (Jaunary 19th, 2021)
 * [Change] Switch to KSP 1.11. There is no backwards compatibility!
 * [Change] Drop the old `MiniAVC` in favor of `MiniAVC-V2`.
 * [Enhancement] Some fixes in French localization.
