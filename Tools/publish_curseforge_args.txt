@@ -4,4 +4,4 @@
 --github=ihsoft/EasyVesselSwitch
 --versions=latest_all_builds
 --title=EVS {tag}
---archive=../EasyVesselSwitch_v2.1.zip
+--archive=../EasyVesselSwitch_v2.2.zip
