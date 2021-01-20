@@ -341,6 +341,9 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// not affect the part renderer states.
   /// </remarks>
   bool isHighlightingEnabled => !Mathf.Approximately(targetVesselHighlightColor.a, 0);
+
+  /// <summary>Tells if the vessel info overlay should be shown.</summary>
+  bool isOverlayEnabled => !Mathf.Approximately(infoOverlayTextColor.a, 0);
   #endregion
 
   #region MonoBehaviour methods
@@ -424,6 +427,9 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <summary>Overridden from MonoBehaviour.</summary>
   /// <remarks>Persents hovered vessel info.</remarks>
   public void OnGUI() {
+    if (!isOverlayEnabled) {
+      return;
+    }
     if (_hoveredVessel != null) {
       ShowHoveredVesselInfo();
     }
