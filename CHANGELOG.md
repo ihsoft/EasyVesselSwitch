@@ -1,5 +1,6 @@
 # 2.2 (Jaunary 19th, 2021)
 # 2.3 (pre-release)
+* [Change] An explicit setting `showOverlay` is added to the settings to stop showing the overlay.
 
 # 2.2 (January 19th, 2021)
 * [Change] Switch to KSP 1.11. There is no backwards compatibility!

@@ -65,6 +65,10 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <summary>Size of the font in the overlay that displays info on the hovered vessel/part.</summary>
   [PersistentField("InfoOverlay/fontSize")]
   int infoOverlayFontSize = 10;
+  
+  /// <summary>Tells if the vessel info overlay should be shown.</summary>
+  [PersistentField("InfoOverlay/showOverlay")]
+  bool isOverlayEnabled = true;
 
   /// <summary>
   /// Background color of the overlay that displays info on the hovered vessel/part.
@@ -360,9 +364,6 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// not affect the part renderer states.
   /// </remarks>
   bool isHighlightingEnabled => !Mathf.Approximately(targetVesselHighlightColor.a, 0);
-
-  /// <summary>Tells if the vessel info overlay should be shown.</summary>
-  bool isOverlayEnabled => !Mathf.Approximately(infoOverlayTextColor.a, 0);
   #endregion
 
   #region MonoBehaviour methods
