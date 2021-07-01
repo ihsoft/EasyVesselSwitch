@@ -659,13 +659,13 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       // camera on the pivot. When animation is disabled then just setting the position is enough
       // since the pivot is set to the new vessel. When animation is enabled we animate the pivot
       // and reset the camera position to have only direction recalculated.
-      if (cameraStabilizationAnimationDuration < float.Epsilon) {
       DebugEx.Info("Fix camera focus while keeping its position");
+      if (cameraStabilizationAnimationDuration < float.Epsilon) {
         camera.SetCamCoordsFromPosition(_oldInfo.cameraPos);
         camera.GetCameraTransform().position = _oldInfo.cameraPos;
       } else {
-        StartCoroutine(AnimateCameraPivotCoroutine(
-            camera.Target, _oldInfo, _newInfo, cameraStabilizationAnimationDuration));
+        StartCoroutine(
+            AnimateCameraPivotCoroutine(camera.Target, _oldInfo, _newInfo, cameraStabilizationAnimationDuration));
       }
     }
   }
@@ -703,8 +703,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
         sb.Add(CurrentPartInFocusStatusMsg);
         sb.Add(AnotherPartFocusHintMsg);
       } else {
-        sb.Add(SetFocusToCurrentPartHintMsg.Format(
-            MouseButtonLookup.Lookup(switchMouseButton)));
+        sb.Add(SetFocusToCurrentPartHintMsg.Format(MouseButtonLookup.Lookup(switchMouseButton)));
       }
       if (camera.targetMode == FlightCamera.TargetMode.Part) {
         sb.Add(ResetFocusHintMsg);
@@ -715,8 +714,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       }
     } else {
       if (camera.targetMode == FlightCamera.TargetMode.Part) {
-        sb.Add(ResetFocusToCurrentVesselHintMsg.Format(
-            MouseButtonLookup.Lookup(switchMouseButton)));
+        sb.Add(ResetFocusToCurrentVesselHintMsg.Format(MouseButtonLookup.Lookup(switchMouseButton)));
       } else {
         sb.Add(SomePartFocusHintMsg);
       }
@@ -779,8 +777,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       cameraStabilizationMode = CameraStabilization.None;
     }
     ScreenMessaging.ShowPriorityScreenMessage(
-        CameraStabilizationModeChangedMsg.Format(
-            CameraStabilizationModeLookup.Lookup(cameraStabilizationMode)));
+        CameraStabilizationModeChangedMsg.Format(CameraStabilizationModeLookup.Lookup(cameraStabilizationMode)));
   }
 
   /// <summary>Shortcut to get a short vessel title.</summary>
