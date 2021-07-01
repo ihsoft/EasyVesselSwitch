@@ -378,7 +378,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
 
     // Drop vessel selection when main modifier is released.
     vesselSwitchKey.OnRelease += delegate{ SetHoveredVessel(null); };
-    // Iterate thru stabilization modes.
+    // Iterate through stabilization modes.
     switchStabilizationModeKey.OnClick += SelectNextStabilizationMode;
   }
 
@@ -802,7 +802,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <returns>
   /// <c>null</c> if it's not a KIS part. Otherwise, either <c>true</c> or <c>false</c>.
   /// </returns>
-  static bool? IsAttachedToGround(Part part) {
+  static bool? IsAttachedToGround(Component part) {
     // ReSharper disable once Unity.PreferGenericMethodOverload
     var kisItemModule = part.GetComponent("ModuleKISItem");
     if (kisItemModule != null) {
@@ -926,7 +926,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   // ReSharper disable once MemberCanBeMadeStatic.Local
   IEnumerator AnimateCameraPositionCoroutine(
       Transform target, VesselInfo oldInfo, VesselInfo newInfo, float transitionDuration) {
-    float startTime = Time.unscaledTime;
+    var startTime = Time.unscaledTime;
     float progress;
     do {
       // Calculate vessel movement compensation offset.
