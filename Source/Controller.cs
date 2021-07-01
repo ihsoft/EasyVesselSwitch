@@ -70,23 +70,6 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   [PersistentField("InfoOverlay/showOverlay")]
   bool isOverlayEnabled = true;
 
-  /// <summary>
-  /// Background color of the overlay that displays info on the hovered vessel/part.
-  /// </summary>
-  [PersistentField("InfoOverlay/backgroundColor")]
-  Color infoOverlayBackgroundColor = new Color(0.0f, 0.0f, 0.0f, 0.5f);
-
-  /// <summary>
-  /// Foreground color of the text in overlay that displays info on the hovered vessel/part.
-  /// </summary>
-  [PersistentField("InfoOverlay/textColor")]
-  Color infoOverlayTextColor = Color.white;
-
-  /// <summary>
-  /// Padding between text and the border in overlay that displays info on the hovered vessel/part.
-  /// </summary>
-  [PersistentField("InfoOverlay/hintPadding")]
-  int infoOverlayHintPadding = 6;
   // ReSharper enable FieldCanBeMadeReadOnly.Local
   // ReSharper enable ConvertToConstant.Local
   #endregion
@@ -375,8 +358,15 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     GameEvents.onPartCouple.Add(OnPartCouple);
     ConfigAccessor.ReadFieldsInType(typeof(Controller), this);
     _mouseInfoOverlay = new HintOverlay(
-        infoOverlayFontSize, infoOverlayHintPadding, infoOverlayTextColor, infoOverlayBackgroundColor);
-
+        () => GUI.skin,
+        () => new GUIStyle(GUI.skin.box) {
+            padding = GUI.skin.button.padding,
+            margin = GUI.skin.button.margin,
+            alignment = TextAnchor.MiddleLeft,
+            fontSize = infoOverlayFontSize,
+        },
+        adjustGuiScale: true);
+    
     // Drop vessel selection when main modifier is released.
     vesselSwitchKey.OnRelease += delegate{ SetHoveredVessel(null); };
     // Iterate through stabilization modes.
