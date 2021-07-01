@@ -1,4 +1,3 @@
-# 2.2 (Jaunary 19th, 2021)
 # 2.3 (pre-release)
 * [Change] The hint overlay now uses the stock Unity GUI style.
 * [Change] The only adjustable text property is now the font size. Set the font size to `0` or just comment out the line to use the default game's font size.
