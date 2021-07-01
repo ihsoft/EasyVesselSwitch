@@ -576,24 +576,26 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     var camera = FlightCamera.fetch;
     var targetPart = Mouse.HoveredPart;
     var targetTransform = targetPart != null ? targetPart.transform : null;
-    if (Mouse.GetAllMouseButtonsDown() == switchMouseButton && targetTransform != camera.Target) {
-      if (targetPart != null) {
-        _oldInfo = VesselInfo.CaptureCurrentState();
-        if (targetPart.vessel == FlightGlobals.ActiveVessel
-            && targetPart.vessel.parts.Count == 1) {
-          // When moving focus back to a single part vessel reset to the vessel mode.
-          camera.TargetActiveVessel();
-        } else {
-          camera.SetTargetPart(Mouse.HoveredPart);
-        }
-        _newInfo = VesselInfo.CaptureCurrentState();
-        StabilizeCamera();
-      } else {
-        _oldInfo = VesselInfo.CaptureCurrentState();
+    if (Mouse.GetAllMouseButtonsDown() != switchMouseButton || targetTransform == camera.Target) {
+      return;
+    }
+
+    if (targetPart != null) {
+      _oldInfo = VesselInfo.CaptureCurrentState();
+      if (targetPart.vessel == FlightGlobals.ActiveVessel
+          && targetPart.vessel.parts.Count == 1) {
+        // When moving focus back to a single part vessel reset to the vessel mode.
         camera.TargetActiveVessel();
-        _newInfo = VesselInfo.CaptureCurrentState();
-        StabilizeCamera();
+      } else {
+        camera.SetTargetPart(Mouse.HoveredPart);
       }
+      _newInfo = VesselInfo.CaptureCurrentState();
+      StabilizeCamera();
+    } else {
+      _oldInfo = VesselInfo.CaptureCurrentState();
+      camera.TargetActiveVessel();
+      _newInfo = VesselInfo.CaptureCurrentState();
+      StabilizeCamera();
     }
   }
   
