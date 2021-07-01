@@ -3,6 +3,7 @@
 * [Change] The only adjustable text property is now the font size. Set the font size to `0` or just comment out the line to use the default game's font size.
 * [Change] The hint overlay is now rescaling to the game's UI scale.
 * [Change] An explicit setting `showOverlay` is added to the settings to stop showing the overlay.
+* [Enhancement] Workaround the `KSP 1.12` bug that halts the game in case of duplicated mods are detected.
 
 # 2.2 (January 19th, 2021)
 * [Change] Switch to KSP 1.11. There is no backwards compatibility!
