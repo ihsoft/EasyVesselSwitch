@@ -3,4 +3,4 @@
 --changelog=../CHANGELOG.md
 --github=ihsoft/EasyVesselSwitch
 --ksp_version=latest
---archive=../EasyVesselSwitch_v2.2.zip
+--archive=../EasyVesselSwitch_v2.3.zip
