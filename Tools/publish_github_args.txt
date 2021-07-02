@@ -4,4 +4,4 @@
 --changelog=../CHANGELOG.md
 --as_draft
 --title=EVS v{tag}
---archive=../EasyVesselSwitch_v2.1.zip
+--archive=../EasyVesselSwitch_v2.3.zip

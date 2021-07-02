@@ -9,6 +9,7 @@ using KSPDev.InputUtils;
 using KSPDev.ProcessingUtils;
 using System.Collections;
 using System.Collections.Generic;
+using KSPDev.LogUtils;
 using UnityEngine;
 
 namespace EasyVesselSwitch {
@@ -18,34 +19,36 @@ namespace EasyVesselSwitch {
 [KSPAddon(KSPAddon.Startup.Flight, false /*once*/)]
 [PersistentFieldsFile("EasyVesselSwitch/Plugins/PluginData/settings.cfg", "")]
 sealed class Controller : MonoBehaviour, IHasGUI {
+  // ReSharper disable FieldCanBeMadeReadOnly.Local
+  // ReSharper disable ConvertToConstant.Local
   #region Persistent fields
   /// <summary>Key to activate vessel select mode.</summary>
   [PersistentField("UI/vesselSwitchKey")]
-  KeyboardInputSwitch vesselSwitchKey = new KeyboardInputSwitch(KeyCode.LeftAlt);
+  KeyboardInputSwitch _vesselSwitchKey = new KeyboardInputSwitch(KeyCode.LeftAlt);
   
   /// <summary>Key to activate focused part select mode.</summary>
   [PersistentField("UI/partFocusSwitchKey")]
-  KeyboardInputSwitch partFocusSwitchKey = new KeyboardInputSwitch(KeyCode.O);
+  KeyboardInputSwitch _partFocusSwitchKey = new KeyboardInputSwitch(KeyCode.O);
 
   /// <summary>Mouse button to trigger part/vessel select.</summary>
   [PersistentField("UI/switchMouseButton")]
-  Mouse.Buttons switchMouseButton = Mouse.Buttons.Left;
+  Mouse.Buttons _switchMouseButton = Mouse.Buttons.Left;
 
   /// <summary>Highlight color for the vessel in vessel select mode.</summary>
   [PersistentField("UI/targetVesselHighlightColor")]
-  Color targetVesselHighlightColor = Color.yellow;
+  Color _targetVesselHighlightColor = Color.yellow;
 
-  /// <summary>Fade out tmeout for the current vessel selection.</summary>
+  /// <summary>Fade out timeout for the current vessel selection.</summary>
   [PersistentField("UI/newVesselHighlightTimeout")]
-  float newVesselHighlightTimeout = 0.5f;
+  float _newVesselHighlightTimeout = 0.5f;
 
   /// <summary>Animation duration for transitioning camera to the new position/rotation.</summary>
   [PersistentField("CameraStabilization/animationDuration")]
-  float cameraStabilizationAnimationDuration = 1f;
+  float _cameraStabilizationAnimationDuration = 1f;
 
   /// <summary>Default mode of camera stabilization. It's not persisted when changed.</summary>
   [PersistentField("CameraStabilization/mode")]
-  CameraStabilization cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
+  CameraStabilization _cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
 
   /// <summary>
   /// Maximum distance to use normal camera stabilization. For greater distances camera is simply
@@ -53,35 +56,22 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// in the focus.
   /// </summary>
   [PersistentField("CameraStabilization/maxVesselDistance")]
-  int maxVesselDistance = 100;  // Meters.
+  int _maxVesselDistance = 100;  // Meters.
 
-  /// <summary>Key which swicthes camera stabilization modes.</summary>
+  /// <summary>Key which switches camera stabilization modes.</summary>
   [PersistentField("CameraStabilization/switchModeKey")]
-  KeyboardInputSwitch switchStabilizationModeKey = new KeyboardInputSwitch(KeyCode.F7);
+  KeyboardInputSwitch _switchStabilizationModeKey = new KeyboardInputSwitch(KeyCode.F7);
 
-  /// <summary>
-  /// Size of the font in the overlay that displays info on the hovered vessel/part.
-  /// </summary>
+  /// <summary>Size of the font in the overlay that displays info on the hovered vessel/part.</summary>
   [PersistentField("InfoOverlay/fontSize")]
-  int infoOverlayFontSize = 10;
+  int _infoOverlayFontSize = 10;
+  
+  /// <summary>Tells if the vessel info overlay should be shown.</summary>
+  [PersistentField("InfoOverlay/showOverlay")]
+  bool _isOverlayEnabled = true;
 
-  /// <summary>
-  /// Background color of the overlay that displays info on the hovered vessel/part.
-  /// </summary>
-  [PersistentField("InfoOverlay/backgroundColor")]
-  Color infoOverlayBackgroundColor = new Color(0.0f, 0.0f, 0.0f, 0.5f);
-
-  /// <summary>
-  /// Foreground color of the text in overlay that displays info on the hovered vessel/part.
-  /// </summary>
-  [PersistentField("InfoOverlay/textColor")]
-  Color infoOverlayTextColor = Color.white;
-
-  /// <summary>
-  /// Padding between text and the border in overlay that displays info on the hovered vessel/part.
-  /// </summary>
-  [PersistentField("InfoOverlay/hintPadding")]
-  int infoOverlayHintPadding = 6;
+  // ReSharper enable FieldCanBeMadeReadOnly.Local
+  // ReSharper enable ConvertToConstant.Local
   #endregion
 
   #region Localizable strings
@@ -152,6 +142,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       description: "The message to display in the hover menu to tell that the vessel CANNOT be"
       + " operated by the player.");
 
+  // ReSharper disable InconsistentNaming
   #region CameraStabilization enum values
   static readonly Message CameraStabilizationMsg_None = new Message(
       "#evsLOC_00010",
@@ -172,6 +163,8 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       description: "The string that identifies a stabilization mode when the distance from the"
       + " camera to the newly selected vessel/part is kept the same as it was on the former"
       + " vessel/part. It's displayed when the mode is changed.");
+
+  // ReSharper enable InconsistentNaming
   #endregion
   
   static readonly MessageLookup<CameraStabilization> CameraStabilizationModeLookup =
@@ -289,7 +282,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
 
   /// <summary>Currently selected mode.</summary>
   /// <remarks>The setting is persistent and will stay between scene and game loads.</remarks>
-  public CameraStabilization currentCameraStabilization => cameraStabilizationMode;
+  public CameraStabilization currentCameraStabilization => _cameraStabilizationMode;
 
   /// <summary>Tells if the camera will be stabilized on switch.</summary>
   /// <remarks>
@@ -305,7 +298,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   enum SwitchEvent {
     /// <summary>No event pending.</summary>
     Idle,
-    /// <summary>Current vessel has changed due to EVS action or keyboard shortkey.</summary>
+    /// <summary>Current vessel has changed due to EVS action or keyboard short key.</summary>
     VesselSwitched,
     /// <summary>Either active vessel has docked to a station or another vessel has docked to the
     /// active station.</summary>
@@ -315,7 +308,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <summary>Vessel which is currently hovered.</summary>
   Vessel _hoveredVessel;
 
-  /// <summary>Overaly window to show info about vessel under the mouse cursor.</summary>
+  /// <summary>Overlay window to show info about vessel under the mouse cursor.</summary>
   HintOverlay _mouseInfoOverlay;
 
   /// <summary>Old vessel context.</summary>
@@ -349,14 +342,11 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <summary>Tells if the vessel highlighting logic should be presented.</summary>
   /// <remarks><c>true</c> if the hovered or selected vessel should be highlighted.</remarks>
   /// <remarks>
-  /// The state is determined from the <i>alpha</i> component of the highlighing color. If it's
+  /// The state is determined from the <i>alpha</i> component of the highlighting color. If it's
   /// <c>0</c>, then no visual appearance will happen anyways. So don't event trigger the logic to
   /// not affect the part renderer states.
   /// </remarks>
-  bool isHighlightingEnabled => !Mathf.Approximately(targetVesselHighlightColor.a, 0);
-
-  /// <summary>Tells if the vessel info overlay should be shown.</summary>
-  bool isOverlayEnabled => !Mathf.Approximately(infoOverlayTextColor.a, 0);
+  bool isHighlightingEnabled => !Mathf.Approximately(_targetVesselHighlightColor.a, 0);
   #endregion
 
   #region MonoBehaviour methods
@@ -368,12 +358,19 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     GameEvents.onPartCouple.Add(OnPartCouple);
     ConfigAccessor.ReadFieldsInType(typeof(Controller), this);
     _mouseInfoOverlay = new HintOverlay(
-        infoOverlayFontSize, infoOverlayHintPadding, infoOverlayTextColor, infoOverlayBackgroundColor);
-
+        () => GUI.skin,
+        () => new GUIStyle(GUI.skin.box) {
+            padding = GUI.skin.button.padding,
+            margin = GUI.skin.button.margin,
+            alignment = TextAnchor.MiddleLeft,
+            fontSize = _infoOverlayFontSize,
+        },
+        adjustGuiScale: true);
+    
     // Drop vessel selection when main modifier is released.
-    vesselSwitchKey.OnRelease += delegate{ SetHoveredVessel(null); };
-    // Iterate thru stabilization modes.
-    switchStabilizationModeKey.OnClick += SelectNextStabilizationMode;
+    _vesselSwitchKey.OnRelease += delegate{ SetHoveredVessel(null); };
+    // Iterate through stabilization modes.
+    _switchStabilizationModeKey.OnClick += SelectNextStabilizationMode;
   }
 
   /// <summary>Overridden from MonoBehaviour.</summary>
@@ -387,11 +384,11 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <remarks>Tracks keys and mouse movement.</remarks>
   void Update() {
     if (!EVAConstructionModeController.Instance.IsOpen) {
-      switchStabilizationModeKey.Update();
-      if (vesselSwitchKey.Update()) {
+      _switchStabilizationModeKey.Update();
+      if (_vesselSwitchKey.Update()) {
         HandleVesselSelection();
       }
-      if (partFocusSwitchKey.Update()) {
+      if (_partFocusSwitchKey.Update()) {
         HandleCameraFocusSelection();
       }
     } else {
@@ -411,7 +408,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
         var restoreHighlightPart = _lastHoveredPart; // Make a cope for the delayed call.
         if (isHighlightingEnabled) {
           AsyncCall.CallOnEndOfFrame(
-              this, () => restoreHighlightPart.highlighter.ConstantOn(targetVesselHighlightColor));
+              this, () => restoreHighlightPart.highlighter.ConstantOn(_targetVesselHighlightColor));
         }
       }
       _lastHoveredPart = Mouse.HoveredPart;
@@ -422,21 +419,21 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <remarks>
   /// Updates camera and vessels highlighting when two vessels docked.
   /// <para>
-  /// EVS stabilzation mode is not supported. Camera position is updated via normal KSP behavior:
+  /// EVS stabilization mode is not supported. Camera position is updated via normal KSP behavior:
   /// keep distance and rotation while slowly moving focus to the new center of mass.
   /// </para>
   /// </remarks>
   void LateUpdate() {
     if (_state == SwitchEvent.VesselDocked) {
       _state = SwitchEvent.Idle;
-      Debug.Log("Setting camera pivot to the new CoM.");
+      DebugEx.Info("Setting camera pivot to the new CoM.");
       var camera = FlightCamera.fetch;
       camera.GetPivot().position = _oldInfo.cameraPivotPos;
       camera.SetCamCoordsFromPosition(_oldInfo.cameraPos);
       camera.GetCameraTransform().position = _oldInfo.cameraPos;
 
       StartCoroutine(TimedHighlightCoroutine(
-          FlightGlobals.ActiveVessel, newVesselHighlightTimeout, targetVesselHighlightColor,
+          FlightGlobals.ActiveVessel, _newVesselHighlightTimeout, _targetVesselHighlightColor,
           isBeingDocked: true));
     }
   }
@@ -444,15 +441,15 @@ sealed class Controller : MonoBehaviour, IHasGUI {
 
   #region IHasGUI implementation
   /// <summary>Overridden from MonoBehaviour.</summary>
-  /// <remarks>Persents hovered vessel info.</remarks>
+  /// <remarks>Presents hovered vessel info.</remarks>
   public void OnGUI() {
-    if (!isOverlayEnabled) {
+    if (!_isOverlayEnabled) {
       return;
     }
     if (_hoveredVessel != null) {
       ShowHoveredVesselInfo();
     }
-    if (partFocusSwitchKey.isHold) {
+    if (_partFocusSwitchKey.isHold) {
       ShowHoveredPartInfo();
     }
   }
@@ -463,7 +460,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <remarks>
   /// Detects vessel docking events.
   /// <para>
-  /// Parts coupling is not a strightforward event. Depending on what has docked to what there may
+  /// Parts coupling is not a straightforward event. Depending on what has docked to what there may
   /// or may not be a vessel switch event sent. To be on a safe side just disable switch event
   /// handling in such case and fix camera in <c>LastUpdate</c>.
   /// </para>
@@ -472,11 +469,11 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     // Only do camera fix if either the source or the destination is an active vessel. 
     if (action.from.vessel.isActiveVessel) {
       _state = SwitchEvent.VesselDocked;
-      Debug.Log("Active vessel docked to a station. Waiting for LateUpdate...");
+      DebugEx.Info("Active vessel docked to a station. Waiting for LateUpdate...");
       _oldInfo = new VesselInfo(action.from.vessel, FlightCamera.fetch);
     } else if (action.to.vessel.isActiveVessel) {
       _state = SwitchEvent.VesselDocked;
-      Debug.Log("Something has docked to the active vessel. Waiting for LateUpdate...");
+      DebugEx.Info("Something has docked to the active vessel. Waiting for LateUpdate...");
       _oldInfo = new VesselInfo(action.to.vessel, FlightCamera.fetch);
     }
   }
@@ -489,11 +486,10 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <param name="fromVessel">A vessel prior the switch.</param>
   /// <param name="toVessel">A new active vessel.</param>  
   void OnVesselSwitch(Vessel fromVessel, Vessel toVessel) {
-    if (_state == SwitchEvent.Idle && cameraStabilizationMode != CameraStabilization.None
+    if (_state == SwitchEvent.Idle && _cameraStabilizationMode != CameraStabilization.None
         && fromVessel != null && fromVessel.isActiveVessel) {
       _state = SwitchEvent.VesselSwitched;
-      Debug.LogFormat(
-          "Detected switch from {0} to {1}. Request camera stabilization.", fromVessel, toVessel);
+      DebugEx.Info("Detected switch from {0} to {1}. Request camera stabilization.", fromVessel, toVessel);
       _newInfo = new VesselInfo(toVessel);
       _oldInfo = new VesselInfo(fromVessel, FlightCamera.fetch);
     }
@@ -506,7 +502,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     // Temporarily highlight the new vessel.
     if (_state == SwitchEvent.VesselSwitched || _state == SwitchEvent.Idle) {
       StartCoroutine(TimedHighlightCoroutine(
-          vessel, newVesselHighlightTimeout, targetVesselHighlightColor));
+          vessel, _newVesselHighlightTimeout, _targetVesselHighlightColor));
     }
 
     if (_state != SwitchEvent.VesselSwitched) {
@@ -521,7 +517,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     // aligning for such modes. In the modes that allow free camera position the transformations
     // can be very different so, just copy source mode into the target vessel.
     // TODO(ihsoft): Find a way to do the translation between different modes.
-    if (Vector3.Distance(_oldInfo.anchorPos, _newInfo.anchorPos) > maxVesselDistance) {
+    if (Vector3.Distance(_oldInfo.anchorPos, _newInfo.anchorPos) > _maxVesselDistance) {
       // On the distant vessels respect camera modes of the both vessels. If either of them is not
       // "free" then just fallback to the default behavior (restore latest known position).
       if (IsFreeCameraPositionMode(_oldInfo.cameraMode)
@@ -549,7 +545,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     SetHoveredVessel(Mouse.HoveredPart? Mouse.HoveredPart.vessel : null);
 
     // Select vessel if clicked.
-    if (Mouse.GetAllMouseButtonsDown() == switchMouseButton
+    if (Mouse.GetAllMouseButtonsDown() == _switchMouseButton
         && _hoveredVessel != null && !_hoveredVessel.isActiveVessel) {
       if (_hoveredVessel.DiscoveryInfo.Level != DiscoveryLevels.Owned) {
         // Cannot switch to unowned vessel. Invoke standard "soft" switch to have error message
@@ -571,24 +567,26 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     var camera = FlightCamera.fetch;
     var targetPart = Mouse.HoveredPart;
     var targetTransform = targetPart != null ? targetPart.transform : null;
-    if (Mouse.GetAllMouseButtonsDown() == switchMouseButton && targetTransform != camera.Target) {
-      if (targetPart != null) {
-        _oldInfo = VesselInfo.CaptureCurrentState();
-        if (targetPart.vessel == FlightGlobals.ActiveVessel
-            && targetPart.vessel.parts.Count == 1) {
-          // When moving focus back to a single part vessel reset to the vessel mode.
-          camera.TargetActiveVessel();
-        } else {
-          camera.SetTargetPart(Mouse.HoveredPart);
-        }
-        _newInfo = VesselInfo.CaptureCurrentState();
-        StabilizeCamera();
-      } else {
-        _oldInfo = VesselInfo.CaptureCurrentState();
+    if (Mouse.GetAllMouseButtonsDown() != _switchMouseButton || targetTransform == camera.Target) {
+      return;
+    }
+
+    if (targetPart != null) {
+      _oldInfo = VesselInfo.CaptureCurrentState();
+      if (targetPart.vessel == FlightGlobals.ActiveVessel
+          && targetPart.vessel.parts.Count == 1) {
+        // When moving focus back to a single part vessel reset to the vessel mode.
         camera.TargetActiveVessel();
-        _newInfo = VesselInfo.CaptureCurrentState();
-        StabilizeCamera();
+      } else {
+        camera.SetTargetPart(Mouse.HoveredPart);
       }
+      _newInfo = VesselInfo.CaptureCurrentState();
+      StabilizeCamera();
+    } else {
+      _oldInfo = VesselInfo.CaptureCurrentState();
+      camera.TargetActiveVessel();
+      _newInfo = VesselInfo.CaptureCurrentState();
+      StabilizeCamera();
     }
   }
   
@@ -634,33 +632,33 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     }
     var camera = FlightCamera.fetch;
 
-    if (cameraStabilizationMode == CameraStabilization.KeepDistanceAndRotation) {
+    if (_cameraStabilizationMode == CameraStabilization.KeepDistanceAndRotation) {
       // Restore old pivot and camera position to have original rotations applied to the camera.
       // Then, either animate the pivot or set it instantly. KSP code will move the camera
       // following the pivot without changing its rotation or distance.
-      Debug.Log("Fix camera position while keeping distance and orientation");
+      DebugEx.Info("Fix camera position while keeping distance and orientation");
       camera.GetPivot().position = _oldInfo.cameraPivotPos;
       camera.SetCamCoordsFromPosition(_oldInfo.cameraPos);
-      if (cameraStabilizationAnimationDuration < float.Epsilon) {
+      if (_cameraStabilizationAnimationDuration < float.Epsilon) {
         camera.GetPivot().position = _newInfo.cameraPivotPos;
       } else {
         StartCoroutine(AnimateCameraPositionCoroutine(
-            camera.Target, _oldInfo, _newInfo, cameraStabilizationAnimationDuration));
+            camera.Target, _oldInfo, _newInfo, _cameraStabilizationAnimationDuration));
       }
     }
 
-    if (cameraStabilizationMode == CameraStabilization.KeepPosition) {
+    if (_cameraStabilizationMode == CameraStabilization.KeepPosition) {
       // Restore old camera position and recalculate camera orientation. KSP code always orient
       // camera on the pivot. When animation is disabled then just setting the position is enough
       // since the pivot is set to the new vessel. When animation is enabled we animate the pivot
       // and reset the camera position to have only direction recalculated.
-      Debug.Log("Fix camera focus while keeping its position");
-      if (cameraStabilizationAnimationDuration < float.Epsilon) {
+      DebugEx.Info("Fix camera focus while keeping its position");
+      if (_cameraStabilizationAnimationDuration < float.Epsilon) {
         camera.SetCamCoordsFromPosition(_oldInfo.cameraPos);
         camera.GetCameraTransform().position = _oldInfo.cameraPos;
       } else {
-        StartCoroutine(AnimateCameraPivotCoroutine(
-            camera.Target, _oldInfo, _newInfo, cameraStabilizationAnimationDuration));
+        StartCoroutine(
+            AnimateCameraPivotCoroutine(camera.Target, _oldInfo, _newInfo, _cameraStabilizationAnimationDuration));
       }
     }
   }
@@ -679,7 +677,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
         _kerbalEva = null;
       }
       if (vessel != null) {
-        SetVesselHighlight(vessel, targetVesselHighlightColor);
+        SetVesselHighlight(vessel, _targetVesselHighlightColor);
         _isKisStaticAttached = IsAttachedToGround(vessel.rootPart);
         _kerbalEva = vessel.GetComponent<KerbalEVA>();
       }
@@ -698,8 +696,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
         sb.Add(CurrentPartInFocusStatusMsg);
         sb.Add(AnotherPartFocusHintMsg);
       } else {
-        sb.Add(SetFocusToCurrentPartHintMsg.Format(
-            MouseButtonLookup.Lookup(switchMouseButton)));
+        sb.Add(SetFocusToCurrentPartHintMsg.Format(MouseButtonLookup.Lookup(_switchMouseButton)));
       }
       if (camera.targetMode == FlightCamera.TargetMode.Part) {
         sb.Add(ResetFocusHintMsg);
@@ -710,8 +707,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
       }
     } else {
       if (camera.targetMode == FlightCamera.TargetMode.Part) {
-        sb.Add(ResetFocusToCurrentVesselHintMsg.Format(
-            MouseButtonLookup.Lookup(switchMouseButton)));
+        sb.Add(ResetFocusToCurrentVesselHintMsg.Format(MouseButtonLookup.Lookup(_switchMouseButton)));
       } else {
         sb.Add(SomePartFocusHintMsg);
       }
@@ -730,14 +726,14 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     var sb = new List<string> {
         _hoveredVessel.isActiveVessel
             ? CurrentVesselMsg.Format()
-            : SwitchToMsg.Format(MouseButtonLookup.Lookup(switchMouseButton)),
+            : SwitchToMsg.Format(MouseButtonLookup.Lookup(_switchMouseButton)),
         ""
     };
 
     // Give a hint when distance is too long.
     var distanceBetweenVessels = Vector3.Distance(
         FlightGlobals.ActiveVessel.transform.position, _hoveredVessel.transform.position);
-    if (distanceBetweenVessels > maxVesselDistance) {
+    if (distanceBetweenVessels > _maxVesselDistance) {
       sb.Add(DistantVesselTargetedMsg.Format(distanceBetweenVessels));
     }
 
@@ -763,19 +759,18 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   }
 
   /// <summary>
-  /// Iterates thru <see cref="CameraStabilization"/> values and pick next mode on each call.
+  /// Iterates through <see cref="CameraStabilization"/> values and pick next mode on each call.
   /// </summary>
   void SelectNextStabilizationMode() {
-    if (cameraStabilizationMode == CameraStabilization.None) {
-      cameraStabilizationMode = CameraStabilization.KeepPosition;
-    } else if (cameraStabilizationMode == CameraStabilization.KeepPosition) {
-      cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
+    if (_cameraStabilizationMode == CameraStabilization.None) {
+      _cameraStabilizationMode = CameraStabilization.KeepPosition;
+    } else if (_cameraStabilizationMode == CameraStabilization.KeepPosition) {
+      _cameraStabilizationMode = CameraStabilization.KeepDistanceAndRotation;
     } else {
-      cameraStabilizationMode = CameraStabilization.None;
+      _cameraStabilizationMode = CameraStabilization.None;
     }
     ScreenMessaging.ShowPriorityScreenMessage(
-        CameraStabilizationModeChangedMsg.Format(
-            CameraStabilizationModeLookup.Lookup(cameraStabilizationMode)));
+        CameraStabilizationModeChangedMsg.Format(CameraStabilizationModeLookup.Lookup(_cameraStabilizationMode)));
   }
 
   /// <summary>Shortcut to get a short vessel title.</summary>
@@ -797,7 +792,8 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <returns>
   /// <c>null</c> if it's not a KIS part. Otherwise, either <c>true</c> or <c>false</c>.
   /// </returns>
-  static bool? IsAttachedToGround(Part part) {
+  static bool? IsAttachedToGround(Component part) {
+    // ReSharper disable once Unity.PreferGenericMethodOverload
     var kisItemModule = part.GetComponent("ModuleKISItem");
     if (kisItemModule != null) {
       var staticAttachedField = kisItemModule.GetType().GetField("staticAttached");
@@ -839,7 +835,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
 
   /// <summary>Checks if camera position can be preserved in the mode.</summary>
   /// <param name="mode">Mode to check.</param>
-  /// <returns><c>true</c> if mode allows perserving the same camera position.</returns>
+  /// <returns><c>true</c> if mode allows preserving the same camera position.</returns>
   static bool IsFreeCameraPositionMode(FlightCamera.Modes mode) {
     return mode == FlightCamera.Modes.AUTO  // It never chooses LOCKED.
         || mode == FlightCamera.Modes.FREE
@@ -849,7 +845,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
 
   /// <summary>A coroutine to temporarily highlight a vessel.</summary>
   /// <param name="vessel">Vessel to highlight.</param>
-  /// <param name="timeout">Duration to keep vessel highlighet.</param>
+  /// <param name="timeout">Duration to keep vessel highlighted.</param>
   /// <param name="color">Color to assign to the highlighter.</param>
   /// <param name = "isBeingDocked">
   /// If <c>true</c> then highlighting logic will expect number of parts in the vessel to increase.
@@ -861,7 +857,7 @@ sealed class Controller : MonoBehaviour, IHasGUI {
     SetVesselHighlight(vessel, color);
     if (isBeingDocked) {
       // On dock event completion the set of vessel parts will increase. Though, there is no
-      // reliable way to detect when new parts are redy to accept highlighter changes. So, just set
+      // reliable way to detect when new parts are ready to accept highlighter changes. So, just set
       // the highlight on every frame. It will cost some performance but it's not critical here. 
       var startTime = Time.unscaledTime;
       while (Time.unscaledTime - startTime < timeout) {
@@ -917,9 +913,10 @@ sealed class Controller : MonoBehaviour, IHasGUI {
   /// <param name="newInfo">The new vessel info.</param>
   /// <param name="transitionDuration">The duration to play the transition animation.</param>
   /// <returns><c>null</c> until the animation is done or aborted.</returns>
+  // ReSharper disable once MemberCanBeMadeStatic.Local
   IEnumerator AnimateCameraPositionCoroutine(
       Transform target, VesselInfo oldInfo, VesselInfo newInfo, float transitionDuration) {
-    float startTime = Time.unscaledTime;
+    var startTime = Time.unscaledTime;
     float progress;
     do {
       // Calculate vessel movement compensation offset.

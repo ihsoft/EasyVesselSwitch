@@ -16,9 +16,9 @@
     "NAME": "Easy Vessel Switch", 
     "URL": "https://raw.githubusercontent.com/ihsoft/EasyVesselSwitch/master/EasyVesselSwitch.version", 
     "VERSION": {
-        "BUILD": 40431, 
+        "BUILD": 41352, 
         "MAJOR": 2, 
-        "MINOR": 2, 
-        "PATCH": 7689
+        "MINOR": 3, 
+        "PATCH": 7852
     }
 }
